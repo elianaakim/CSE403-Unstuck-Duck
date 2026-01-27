@@ -4,10 +4,10 @@
 
 **Original Goals for the Week**: The original goals for this week include setting up the repository, finalizing the MVP scope, starting UX and Figma design, determining teaching score logic, and determining data schema. 
 
-**Progress and Issues**: Report on progress and issues: We made a shared repository, assigned each person which sub goal to finish by next week, and finalized the MVP scope. We are planning to start the UX design using Figma design, determine the teaching score logic, and determine the data schema by this Friday.
+**Progress and Issues**: Report on progress and issues: We made a shared repository, assigned each person which sub-goal to finish by next week, and finalized the MVP scope. We are planning to start the UX design using Figma design, determine the teaching score logic, and determine the data schema by this Friday.
 Currently not really blocked on anything. 
 
-**Questions for the Product Owner**: We are wondering which AI tool would be the cheapest and still well-functioned. Do you recommend DeepSeek, OpenAI, Gemini, Claude, Llama etc? 
+**Questions for the Product Owner**: We are wondering which AI tool would be the cheapest and still well-functioning. Do you recommend DeepSeek, OpenAI, Gemini, Claude, Llama etc? 
 
 **Goals for Next Week**:
 * Start Figma UI/UX - a week - Mia
