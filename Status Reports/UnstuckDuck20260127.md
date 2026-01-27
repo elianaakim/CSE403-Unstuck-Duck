@@ -1,13 +1,26 @@
 **Weekly Report**
 
-**High Level Goal**: Our overarching goal is to integrate OpenAI, calculate teaching score for the duck to display, host on the web, and generate an image visualization feature.  
+**High Level Goal**: Integrate an AI model, compute and display a teaching score for the duck, deploy the application on the web, and support an image visualization feature.
 
-**Original Goals for the Week**: The original goals for this week include setting up the repository, finalizing the MVP scope, starting UX and Figma design, determining teaching score logic, and determining data schema. 
+**Original Goals for the Week**: 
+*Set up the repository
+*Finalize the MVP scope
+*Start UX and Figma design
+*Determine teaching score logic
+*Determine data schema
 
-**Progress and Issues**: Report on progress and issues: We made a shared repository, assigned each person which sub-goal to finish by next week, and finalized the MVP scope. We are planning to start the UX design using Figma design, determine the teaching score logic, and determine the data schema by this Friday.
-Currently not really blocked on anything. 
+**Progress and Issues**: 
+*Created a shared GitHub repository and ensured all team members had access.
+*Finalized the MVP scope and clarified what features are required for the first release.
+*Assigned sub-goals to each team member with clear ownership for the upcoming week.
+*Discussed initial ideas for teaching score logic and data schema.
+*Learned more about how to split frontend and backend responsibilities early to avoid integration issues later.
+*No major blockers at the moment.
+*UX design, teaching score logic, and data schema definition are still in progress and planned to be completed by Friday.
 
-**Questions for the Product Owner**: We are wondering which AI tool would be the cheapest and still well-functioning. Do you recommend DeepSeek, OpenAI, Gemini, Claude, Llama etc? 
+**Questions for the Product Owner**: 
+* Which AI model or platform would you recommend that balances low cost with reliable performance?
+* Between options like OpenAI, DeepSeek, Gemini, Claude, or Llama, is there one you prefer for this project?
 
 **Goals for Next Week**:
 * Start Figma UI/UX - a week - Mia
