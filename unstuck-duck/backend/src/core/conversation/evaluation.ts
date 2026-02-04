@@ -1,12 +1,26 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function POST(req: any) {
+export async function evaluateConversation(req: any) {
   try {
     console.log("HERE");
-    const { question, userAnswer, subject } = await req.json(); // Get the AI's question & user's answer
+    const body = await req.json();
+    const { question, userAnswer, subject } = body || {}; // Get the AI's question & user's answer
 
+    if (
+      typeof question !== "string" ||
+      question.trim().length === 0 ||
+      typeof userAnswer !== "string" ||
+      userAnswer.trim().length === 0 ||
+      typeof subject !== "string" ||
+      subject.trim().length === 0
+    ) {
+      return Response.json(
+        { error: "Invalid request body: 'question', 'userAnswer', and 'subject' must be non-empty strings." },
+        { status: 400 }
+      );
+    }
     // Step 1: Evaluate how well the user answered the question
     const evaluationResponse = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -18,25 +32,41 @@ export async function POST(req: any) {
         },
         {
           role: "user",
-          content: `Subject: "${subject}"\nQuestion: "${question}"\nUser's Answer: "${userAnswer}"\nScore (0-100):`,
+          content: `Subject: "${subject}"\nQuestion: "${question}"\nUser's Answer: "${userAnswer}"\nScore (1-100):`,
         },
       ],
       max_tokens: 10,
     });
     console.log(evaluationResponse);
 
-    let newScore =
+    let newScore = 0;
+    if (
       evaluationResponse.choices[0].message &&
       evaluationResponse.choices[0].message.content
-        ? parseInt(evaluationResponse.choices[0].message.content.trim(), 10)
-        : 0;
+    ) {
+      const parsed = parseInt(
+        evaluationResponse.choices[0].message.content.trim(),
+        10
+      );
+      newScore = !isNaN(parsed) ? parsed : 0;
+    }
 
-    return Response.json({ score: newScore }, { status: 200 });
+    return new Response(JSON.stringify({ score: newScore }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   } catch (error) {
     console.error("Error calculating score:", error);
-    return Response.json(
-      { error: "Failed to calculate score" },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: "Failed to calculate score" }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 }
