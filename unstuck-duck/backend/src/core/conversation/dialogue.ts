@@ -56,16 +56,13 @@ export async function generateFollowUpQuestion(
 - Never lecture or give correct answers
 - Stay in character as a genuinely curious, slightly confused student
 - Keep questions natural and conversational
-- Ask only ONE question at a time`,
+- Ask only ONE question at a time
+- Generate your next question as the curious duck student.`,
       },
       ...conversationHistory,
       {
         role: "user",
         content: userLastResponse,
-      },
-      {
-        role: "system",
-        content: "Generate your next question as the curious duck student:",
       },
     ];
 
