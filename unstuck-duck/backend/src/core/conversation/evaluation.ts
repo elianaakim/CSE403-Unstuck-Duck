@@ -122,7 +122,7 @@ export function evaluateExplanation(
  * - Examples: Whether concrete, relevant examples are provided
  *
  */
-function analyzeResponse(response: string): ResponseAnalysis {
+export function analyzeResponse(response: string): ResponseAnalysis {
   const wordCount = response.split(/\s+/).length;
   const sentences = response.split(/[.!?]+/).filter((s) => s.trim().length > 0);
 
