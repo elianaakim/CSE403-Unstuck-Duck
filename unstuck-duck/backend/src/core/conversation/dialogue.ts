@@ -1,7 +1,4 @@
-// AI prompting & response logic using OpenAI
-import OpenAI from "openai";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { openaiClient } from "../../routes/openai";
 
 /**
  * Generates the first question to start the conversation
@@ -9,7 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  */
 export async function generateFirstQuestion(subject: string): Promise<string> {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await openaiClient.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
@@ -66,7 +63,7 @@ export async function generateFollowUpQuestion(
       },
     ];
 
-    const response = await openai.chat.completions.create({
+    const response = await openaiClient.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: messages as any,
       max_tokens: 150,

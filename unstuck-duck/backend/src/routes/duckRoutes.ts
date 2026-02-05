@@ -1,14 +1,10 @@
-// routes/duckRoutes.ts
 import { Router } from "express";
-import {
-  generateFirstQuestion,
-  generateFollowUpQuestion,
-} from "../core/conversation/dialogue";
+import { generateFirstQuestion, generateFollowUpQuestion } from "../core/conversation/dialogue";
 import { evaluateConversation } from "../core/conversation/evaluation";
 
 const router = Router();
 
-// In-memory session store (replace with DB later)
+// In-memory session storage (replace with Supabase later)
 const sessions = new Map<string, any>();
 
 // Start a teaching session
@@ -34,8 +30,9 @@ router.post("/sessions/start", async (req, res) => {
         { role: "assistant", content: firstQuestion },
       ],
       status: "active",
-      userScore: 0,
-      attempts: 0,
+      teachingScore: 0,
+      lastEvaluatedAt: null,
+      evaluationCount: 0,
     };
 
     sessions.set(sessionId, session);
@@ -45,8 +42,8 @@ router.post("/sessions/start", async (req, res) => {
       duckQuestion: firstQuestion,
       topic: session.topic,
       startTime: session.startTime,
+      teachingScore: 0,
       message: `Started teaching session on "${topic}"`,
-      conversationHistory: session.conversationHistory,
     });
   } catch (error) {
     console.error("Error starting session:", error);
@@ -93,14 +90,10 @@ router.post("/ask", async (req, res) => {
       content: followUpQuestion,
     });
 
-    // Update session
-    session.attempts = (session.attempts || 0) + 1;
-
     res.json({
       sessionId,
       duckQuestion: followUpQuestion,
-      conversationHistory: session.conversationHistory,
-      attempts: session.attempts,
+      currentTeachingScore: session.teachingScore,
       timestamp: new Date(),
     });
   } catch (error) {
@@ -109,14 +102,14 @@ router.post("/ask", async (req, res) => {
   }
 });
 
-// Get teaching feedback and score (AI evaluation)
-router.post("/feedback", async (req, res) => {
+// Get teaching evaluation (duck evaluates how well it's being taught)
+router.post("/evaluate", async (req, res) => {
   try {
-    const { sessionId, question, userAnswer } = req.body;
+    const { sessionId } = req.body;
 
-    if (!sessionId || !question || !userAnswer) {
+    if (!sessionId) {
       return res.status(400).json({
-        error: "sessionId, question, and userAnswer are required",
+        error: "sessionId is required",
       });
     }
 
@@ -125,11 +118,37 @@ router.post("/feedback", async (req, res) => {
       return res.status(404).json({ error: "Session not found" });
     }
 
+    if (session.status !== "active") {
+      return res.status(400).json({ error: "Session is not active" });
+    }
+
+    // Get the last question and answer from conversation history
+    const conversation = session.conversationHistory;
+    let lastQuestion = "";
+    let lastUserAnswer = "";
+
+    // Find the last assistant question and user response
+    for (let i = conversation.length - 1; i >= 0; i--) {
+      if (conversation[i].role === "user" && !lastUserAnswer) {
+        lastUserAnswer = conversation[i].content;
+      }
+      if (conversation[i].role === "assistant" && !lastQuestion) {
+        lastQuestion = conversation[i].content;
+      }
+      if (lastQuestion && lastUserAnswer) break;
+    }
+
+    if (!lastQuestion || !lastUserAnswer) {
+      return res.status(400).json({
+        error: "Need at least one question and answer to evaluate teaching",
+      });
+    }
+
     // Create a mock request object for evaluateConversation
     const mockRequest = {
       json: async () => ({
-        question,
-        userAnswer,
+        question: lastQuestion,
+        userAnswer: lastUserAnswer,
         subject: session.topic,
       }),
     };
@@ -142,47 +161,45 @@ router.post("/feedback", async (req, res) => {
       throw new Error(evaluationData.error);
     }
 
-    // Update session score
-    session.userScore = (session.userScore || 0) + evaluationData.score;
+    // Update the teaching score
+    // Use the latest evaluation as the current teaching score
+    session.teachingScore = evaluationData.score;
+    session.lastEvaluatedAt = new Date();
+    session.evaluationCount = (session.evaluationCount || 0) + 1;
 
-    // Calculate percentage (assuming max score per question is 100)
-    const totalPossibleScore = (session.attempts || 1) * 100;
-    const percentageScore = Math.round(
-      (session.userScore / totalPossibleScore) * 100
-    );
-
-    // Determine feedback based on score
+    // Determine feedback based on the teaching score
+    // Make these more verbose later
     let feedback = "";
-    if (evaluationData.score >= 80) {
-      feedback = "Excellent explanation! You clearly understand this concept.";
-    } else if (evaluationData.score >= 60) {
-      feedback = "Good job! Your explanation covers the main points.";
-    } else if (evaluationData.score >= 40) {
-      feedback =
-        "You're on the right track, but could use more detail or clarity.";
+    if (session.teachingScore >= 90) {
+      feedback = "Outstanding teaching! I feel very prepared for the exam.";
+    } else if (session.teachingScore >= 80) {
+      feedback = "Great teaching! I have a strong understanding.";
+    } else if (session.teachingScore >= 70) {
+      feedback = "Good teaching. I'm getting the main concepts.";
+    } else if (session.teachingScore >= 60) {
+      feedback = "Fair teaching. I understand the basics.";
+    } else if (session.teachingScore >= 50) {
+      feedback = "Okay teaching. I need more clarity on some points.";
     } else {
-      feedback =
-        "Try to focus more on the core concepts and provide specific examples.";
+      feedback = "Keep teaching! I need more explanation to understand.";
     }
 
     res.json({
       sessionId,
-      score: evaluationData.score,
-      totalScore: session.userScore,
-      percentageScore,
+      teachingScore: session.teachingScore, 
       feedback,
-      question,
-      userAnswer,
-      timestamp: new Date(),
-      attempts: session.attempts,
+      lastQuestion,
+      evaluationCount: session.evaluationCount,
+      timestamp: session.lastEvaluatedAt,
+      message: `Based on your teaching, I think I'd score around a ${session.teachingScore}/100 on an exam. ${feedback}`,
     });
   } catch (error) {
-    console.error("Error evaluating feedback:", error);
-    res.status(500).json({ error: "Failed to evaluate explanation" });
+    console.error("Error evaluating teaching:", error);
+    res.status(500).json({ error: "Failed to evaluate teaching" });
   }
 });
 
-// End session and get final assessment
+// End session and get final teaching assessment
 router.post("/sessions/end", async (req, res) => {
   try {
     const { sessionId } = req.body;
@@ -200,36 +217,33 @@ router.post("/sessions/end", async (req, res) => {
     session.status = "completed";
     session.duration = session.endTime.getTime() - session.startTime.getTime();
 
-    // Calculate final score metrics
-    const totalPossibleScore = (session.attempts || 1) * 100;
-    const finalPercentage =
-      session.attempts > 0
-        ? Math.round((session.userScore / totalPossibleScore) * 100)
-        : 0;
-
-    // Generate final assessment
+    // Final teaching assessment based on the last teaching score
     let finalAssessment = "";
-    if (finalPercentage >= 80) {
-      finalAssessment = "Outstanding! You've mastered this topic.";
-    } else if (finalPercentage >= 60) {
-      finalAssessment = "Good work! You have a solid understanding.";
-    } else if (finalPercentage >= 40) {
-      finalAssessment = "You're making progress. Keep practicing!";
+    if (session.teachingScore >= 90) {
+      finalAssessment = "Master teacher! Your explanations are exceptional.";
+    } else if (session.teachingScore >= 80) {
+      finalAssessment = "Excellent teacher! You explain concepts very clearly.";
+    } else if (session.teachingScore >= 70) {
+      finalAssessment = "Good teacher! You cover the material well.";
+    } else if (session.teachingScore >= 60) {
+      finalAssessment = "Capable teacher. You get the main points across.";
+    } else if (session.teachingScore >= 50) {
+      finalAssessment = "Developing teacher. With practice, you'll improve.";
     } else {
-      finalAssessment = "Keep learning! Review the basics and try again.";
+      finalAssessment = "Keep practicing your teaching skills!";
     }
 
     res.json({
       sessionId,
-      finalScore: session.userScore || 0,
-      percentageScore: finalPercentage,
+      finalTeachingScore: session.teachingScore, // final score
       duration: session.duration,
-      conversationTurns: session.attempts || 0,
+      conversationTurns: Math.floor(session.conversationHistory.length / 2),
       finalAssessment,
       topic: session.topic,
       startTime: session.startTime,
       endTime: session.endTime,
-      conversationHistory: session.conversationHistory,
+      evaluationCount: session.evaluationCount || 0,
+      message: `Teaching session complete! Final teaching score: ${session.teachingScore}/100. ${finalAssessment}`,
     });
 
     // Clean up after 10 minutes
@@ -258,9 +272,10 @@ router.get("/sessions/:sessionId", (req, res) => {
       topic: session.topic,
       status: session.status,
       startTime: session.startTime,
-      userScore: session.userScore || 0,
-      attempts: session.attempts || 0,
-      conversationHistory: session.conversationHistory || [],
+      teachingScore: session.teachingScore, 
+      evaluationCount: session.evaluationCount || 0,
+      conversationLength: session.conversationHistory.length,
+      lastEvaluatedAt: session.lastEvaluatedAt,
       ...(session.endTime && { endTime: session.endTime }),
       ...(session.duration && { duration: session.duration }),
     });
