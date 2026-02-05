@@ -62,7 +62,7 @@ export async function evaluateWithAI(
     clarity: number;
     depth: number;
     examples: number;
-    coherence: number;
+    understanding: number;
   };
 }> {
   try {
@@ -74,7 +74,7 @@ export async function evaluateWithAI(
       Conversation context: ${conversationContext}
       
       Rate from 0-100 based on teaching quality.
-      Consider: clarity, depth, use of examples, logical flow.
+      Consider: clarity, depth, use of examples, and how well the user understands the topic.
       
       Return ONLY JSON with this exact format:
       {
@@ -84,7 +84,7 @@ export async function evaluateWithAI(
           "clarity": number (0-25),
           "depth": number (0-25),
           "examples": number (0-25),
-          "coherence": number (0-25)
+          "understanding": number (0-25)
         }
       }`;
 
@@ -103,11 +103,8 @@ export async function evaluateWithAI(
     const content = response.choices[0]?.message?.content || "{}";
     const result = JSON.parse(content);
 
-    // Convert 0-100 score to your 0-800 scale (×8)
-    const scaledScore = Math.round((result.score || 0) * 8);
-
     return {
-      score: scaledScore,
+      score: result.score,
       feedback: result.feedback || "AI evaluation failed",
       breakdown: result.breakdown || {
         clarity: 0,
