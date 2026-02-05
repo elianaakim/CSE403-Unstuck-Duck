@@ -20,6 +20,7 @@ Define API contracts between front and back
 * Implement main menu UI - a week - Yang Wu and Wesley Li
 * Integrate OpenAI API - a week - Iris Guo
 * Implement Teaching Score Logic - a week - Elianna Kim
+* Approving merge requests and reading over changes for APIs/Evaluation logic - Ava Doan
 * Connect frontend inputs to backend responses - a week - Yang Wu
 * Test and identify issues - last day - Mia Chavez
 * Make assets - one week - Mia Chavez
