@@ -9,6 +9,9 @@ export default function Home() {
 
   function handleLeftClick() {
     const newSelected = (((selected - 1) % 3) + 3) % 3;
+    console.log(
+      `Swapping from ${selections[selected]} to ${selections[newSelected]}`,
+    );
     if (newSelected < 0 || newSelected > 2) {
       throw new Error(`selected ${newSelected} not in range 0 to 2!`);
     }
@@ -17,6 +20,9 @@ export default function Home() {
 
   function handleRightClick() {
     const newSelected = (((selected + 1) % 3) + 3) % 3;
+    console.log(
+      `Swapping from ${selections[selected]} to ${selections[newSelected]}`,
+    );
     if (newSelected < 0 || newSelected > 2) {
       throw new Error(`selected ${newSelected} not in range 0 to 2!`);
     }
@@ -41,15 +47,7 @@ export default function Home() {
                 draggable="false"
                 onClick={handleLeftClick}
               />
-              <Image
-                src="/left-circle-arrow.png"
-                alt="Left Arrow"
-                className=""
-                width={BACK_IMG_SIZE}
-                height={BACK_IMG_SIZE}
-                draggable="false"
-                onClick={handleLeftClick}
-              />
+              {leftArrow()}
             </div>
             <div className="">
               <Image
@@ -71,21 +69,25 @@ export default function Home() {
                 draggable="false"
                 onClick={handleRightClick}
               />
+              {rightArrow()}
             </div>
           </div>
         );
       case 1:
         return (
-          <div className="flex w-full h-3/4 flex-row justify-center">
-            <Image
-              src="/duck.png"
-              alt="Duck Image"
-              className=""
-              width={300}
-              height={300}
-              draggable="false"
-              onClick={handleLeftClick}
-            />
+          <div className="flex w-full h-3/4 flex-row justify-center space-x-4">
+            <div>
+              <Image
+                src="/duck.png"
+                alt="Duck Image"
+                className=""
+                width={BACK_IMG_SIZE}
+                height={BACK_IMG_SIZE}
+                draggable="false"
+                onClick={handleLeftClick}
+              />
+              {leftArrow()}
+            </div>
             <Image
               src="/lake.png"
               alt="Lake Image"
@@ -94,29 +96,35 @@ export default function Home() {
               height={300}
               draggable="false"
             />
-            <Image
-              src="/courses.png"
-              alt="Courses Image"
-              className=""
-              width={300}
-              height={300}
-              draggable="false"
-              onClick={handleRightClick}
-            />
+            <div>
+              <Image
+                src="/courses.png"
+                alt="Courses Image"
+                className=""
+                width={BACK_IMG_SIZE}
+                height={BACK_IMG_SIZE}
+                draggable="false"
+                onClick={handleRightClick}
+              />
+              {rightArrow()};
+            </div>
           </div>
         );
       default:
         return (
-          <div className="flex w-full h-3/4 flex-row justify-center">
-            <Image
-              src="/lake.png"
-              alt="Lake Image"
-              className=""
-              width={300}
-              height={300}
-              draggable="false"
-              onClick={handleLeftClick}
-            />
+          <div className="flex w-full h-3/4 flex-row justify-center space-x-4">
+            <div>
+              <Image
+                src="/lake.png"
+                alt="Lake Image"
+                className=""
+                width={BACK_IMG_SIZE}
+                height={BACK_IMG_SIZE}
+                draggable="false"
+                onClick={handleLeftClick}
+              />
+              {leftArrow()}
+            </div>
             <Image
               src="/courses.png"
               alt="Courses Image"
@@ -125,18 +133,49 @@ export default function Home() {
               height={300}
               draggable="false"
             />
-            <Image
-              src="/duck.png"
-              alt="Duck Image"
-              className=""
-              width={300}
-              height={300}
-              draggable="false"
-              onClick={handleRightClick}
-            />
+            <div>
+              <Image
+                src="/duck.png"
+                alt="Duck Image"
+                className=""
+                width={BACK_IMG_SIZE}
+                height={BACK_IMG_SIZE}
+                draggable="false"
+                onClick={handleRightClick}
+              />
+              {rightArrow()}
+            </div>
           </div>
         );
     }
+  }
+
+  function leftArrow() {
+    return (
+      <Image
+        src="/left-circle-arrow.png"
+        alt="Left Arrow"
+        className=""
+        width={BACK_IMG_SIZE}
+        height={BACK_IMG_SIZE}
+        draggable="false"
+        onClick={handleLeftClick}
+      />
+    );
+  }
+
+  function rightArrow() {
+    return (
+      <Image
+        src="/right-circle-arrow.png"
+        alt="Right Arrow"
+        className=""
+        width={BACK_IMG_SIZE}
+        height={BACK_IMG_SIZE}
+        draggable="false"
+        onClick={handleRightClick}
+      />
+    );
   }
 
   return (
