@@ -1,13 +1,10 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/**
- * Uses AI to generate a more natural/contextual duck question
- * Falls back to rule-based if AI fails
- */
+export const openaiClient = openai;
+
+// Generates question
 export async function generateAIDuckQuestion(
   topic: string,
   lastUserResponse: string,
@@ -43,14 +40,12 @@ export async function generateAIDuckQuestion(
 
     return response.choices[0]?.message?.content?.trim() || "";
   } catch (error) {
-    console.warn("OpenAI failed, using rule-based fallback");
-    return ""; // Empty string triggers fallback
+    console.error("Error generating duck question:", error);
+    throw error;
   }
 }
 
-/**
- * Uses AI to evaluate teaching quality with detailed feedback
- */
+// Uses AI to evaluate teaching ability with feedback
 export async function evaluateWithAI(
   topic: string,
   userResponse: string,
@@ -62,7 +57,7 @@ export async function evaluateWithAI(
     clarity: number;
     depth: number;
     examples: number;
-    coherence: number;
+    understanding: number;
   };
 }> {
   try {
@@ -74,7 +69,7 @@ export async function evaluateWithAI(
       Conversation context: ${conversationContext}
       
       Rate from 0-100 based on teaching quality.
-      Consider: clarity, depth, use of examples, logical flow.
+      Consider: clarity, depth, use of examples, and how well the user understands the topic.
       
       Return ONLY JSON with this exact format:
       {
@@ -84,7 +79,7 @@ export async function evaluateWithAI(
           "clarity": number (0-25),
           "depth": number (0-25),
           "examples": number (0-25),
-          "coherence": number (0-25)
+          "understanding": number (0-25)
         }
       }`;
 
@@ -103,11 +98,8 @@ export async function evaluateWithAI(
     const content = response.choices[0]?.message?.content || "{}";
     const result = JSON.parse(content);
 
-    // Convert 0-100 score to your 0-800 scale (×8)
-    const scaledScore = Math.round((result.score || 0) * 8);
-
     return {
-      score: scaledScore,
+      score: result.score,
       feedback: result.feedback || "AI evaluation failed",
       breakdown: result.breakdown || {
         clarity: 0,
@@ -119,5 +111,38 @@ export async function evaluateWithAI(
   } catch (error) {
     console.error("AI evaluation failed:", error);
     throw new Error("AI evaluation service unavailable");
+  }
+}
+
+// Returns a teaching score from 1-100.
+export async function evaluateTeachingScore(
+  question: string,
+  userAnswer: string,
+  subject: string
+): Promise<number> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "Return ONLY a number from 1-100. No other text.",
+        },
+        {
+          role: "user",
+          content: `Subject: ${subject}\nQ: ${question}\nA: ${userAnswer}\nScore (1-100):`,
+        },
+      ],
+      max_tokens: 20,
+      temperature: 0.3,
+    });
+
+    const content = response.choices[0]?.message?.content || "";
+    const match = content.match(/\b\d{1,3}\b/);
+    const score = match ? parseInt(match[0], 10) : 0;
+    return Math.max(1, Math.min(100, score));
+  } catch (error) {
+    console.error("Error in evaluateTeachingScore:", error);
+    throw error; 
   }
 }
