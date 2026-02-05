@@ -1,50 +1,52 @@
+// routes/duckRoutes.ts
 import { Router } from "express";
 import {
-  determineNextQuestionType,
-  evaluateExplanation,
-  analyzeResponse,
-  getScoreCategory,
-  calculatePercentageScore,
-  getFinalAssessment,
-  QuestionType,
-} from "../core/conversation/evaluation";
-import { generateDuckResponse } from "../core/conversation/dialogue";
-import { generateAIDuckQuestion, evaluateWithAI } from "../routes/openai";
+  generateFirstQuestion,
+  generateFollowUpQuestion,
+} from "../core/conversation/dialogue";
+import { evaluateConversation } from "../core/conversation/evaluation";
 
 const router = Router();
 
 // In-memory session store (replace with DB later)
-const sessions = new Map();
+const sessions = new Map<string, any>();
 
-// 1. Start a teaching session
-router.post("/sessions/start", (req, res) => {
+// Start a teaching session
+router.post("/sessions/start", async (req, res) => {
   try {
     const { topic } = req.body;
 
-    if (!topic) {
-      return res.status(400).json({ error: "Topic is required" });
+    if (!topic || typeof topic !== "string" || topic.trim().length === 0) {
+      return res.status(400).json({ error: "Valid topic is required" });
     }
 
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // Generate first AI question
+    const firstQuestion = await generateFirstQuestion(topic);
+
     const session = {
       sessionId,
-      topic,
+      topic: topic.trim(),
       startTime: new Date(),
-      totalScore: 0,
-      conversation: [],
+      conversationHistory: [
+        { role: "system", content: `Learning about ${topic}` },
+        { role: "assistant", content: firstQuestion },
+      ],
       status: "active",
-      useAI: false, // Start with rule-based
+      userScore: 0,
+      attempts: 0,
     };
 
     sessions.set(sessionId, session);
 
     res.json({
       sessionId,
-      message: `Started teaching session on "${topic}"`,
-      topic,
+      duckQuestion: firstQuestion,
+      topic: session.topic,
       startTime: session.startTime,
-      totalScore: 0,
+      message: `Started teaching session on "${topic}"`,
+      conversationHistory: session.conversationHistory,
     });
   } catch (error) {
     console.error("Error starting session:", error);
@@ -52,13 +54,15 @@ router.post("/sessions/start", (req, res) => {
   }
 });
 
-// 2. Get duck's next question (hybrid: rule-based + AI)
+// Generate duck's next question
 router.post("/ask", async (req, res) => {
   try {
-    const { sessionId, lastUserResponse, conversationHistory } = req.body;
+    const { sessionId, userResponse } = req.body;
 
-    if (!sessionId || !lastUserResponse) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!sessionId || !userResponse || typeof userResponse !== "string") {
+      return res.status(400).json({
+        error: "sessionId and userResponse (string) are required",
+      });
     }
 
     const session = sessions.get(sessionId);
@@ -66,72 +70,38 @@ router.post("/ask", async (req, res) => {
       return res.status(404).json({ error: "Session not found" });
     }
 
-    const analysis = analyzeResponse(lastUserResponse);
-
-    // Determine question type using rule-based logic
-    const nextQuestionType = determineNextQuestionType(
-      lastUserResponse,
-      conversationHistory || [],
-      session.totalScore
-    );
-
-    let duckQuestion: string;
-    let useAI = session.useAI;
-
-    // Use AI if: score > 400 OR response is complex OR rule-based seems inadequate
-    const shouldUseAI =
-      session.totalScore > 400 ||
-      analysis.completeness > 80 ||
-      lastUserResponse.length > 200;
-
-    if (shouldUseAI) {
-      const aiQuestion = await generateAIDuckQuestion(
-        session.topic,
-        lastUserResponse,
-        conversationHistory || []
-      );
-
-      if (aiQuestion && aiQuestion.length > 10) {
-        duckQuestion = aiQuestion;
-        useAI = true;
-      } else {
-        // Fallback to rule-based
-        const duckResponse = generateDuckResponse(nextQuestionType, {
-          topic: session.topic,
-          lastUserResponse,
-          conversationHistory: conversationHistory || [],
-        });
-        duckQuestion = duckResponse.message;
-        useAI = false;
-      }
-    } else {
-      // Use rule-based
-      const duckResponse = generateDuckResponse(nextQuestionType, {
-        topic: session.topic,
-        lastUserResponse,
-        conversationHistory: conversationHistory || [],
-      });
-      duckQuestion = duckResponse.message;
-      useAI = false;
+    if (session.status !== "active") {
+      return res.status(400).json({ error: "Session is not active" });
     }
 
-    // Update session
-    session.useAI = useAI;
-    session.conversation.push({
-      timestamp: new Date(),
-      userMessage: lastUserResponse,
-      duckQuestion,
+    // Add user response to conversation history
+    session.conversationHistory.push({
+      role: "user",
+      content: userResponse,
     });
 
+    // Generate AI follow-up question
+    const followUpQuestion = await generateFollowUpQuestion(
+      session.topic,
+      session.conversationHistory,
+      userResponse
+    );
+
+    // Add duck's question to conversation history
+    session.conversationHistory.push({
+      role: "assistant",
+      content: followUpQuestion,
+    });
+
+    // Update session
+    session.attempts = (session.attempts || 0) + 1;
+
     res.json({
-      duckQuestion,
-      questionType: nextQuestionType,
-      usesAI: useAI,
-      analysis: {
-        clarity: analysis.clarity,
-        completeness: analysis.completeness,
-        hasExamples: analysis.hasExamples,
-      },
+      sessionId,
+      duckQuestion: followUpQuestion,
+      conversationHistory: session.conversationHistory,
+      attempts: session.attempts,
+      timestamp: new Date(),
     });
   } catch (error) {
     console.error("Error generating question:", error);
@@ -139,13 +109,15 @@ router.post("/ask", async (req, res) => {
   }
 });
 
-// 3. Get teaching feedback (hybrid scoring)
+// Get teaching feedback and score (AI evaluation)
 router.post("/feedback", async (req, res) => {
   try {
-    const { sessionId, userResponse } = req.body;
+    const { sessionId, question, userAnswer } = req.body;
 
-    if (!sessionId || !userResponse) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!sessionId || !question || !userAnswer) {
+      return res.status(400).json({
+        error: "sessionId, question, and userAnswer are required",
+      });
     }
 
     const session = sessions.get(sessionId);
@@ -153,75 +125,56 @@ router.post("/feedback", async (req, res) => {
       return res.status(404).json({ error: "Session not found" });
     }
 
-    let deltaPoints: number;
-    let feedback: string;
-    let breakdown: any;
-    let usesAI = false;
+    // Create a mock request object for evaluateConversation
+    const mockRequest = {
+      json: async () => ({
+        question,
+        userAnswer,
+        subject: session.topic,
+      }),
+    };
 
-    // Use AI scoring for complex responses or higher scores
-    const analysis = analyzeResponse(userResponse);
-    const shouldUseAI =
-      session.totalScore > 300 ||
-      analysis.completeness > 70 ||
-      userResponse.length > 150;
+    // Get AI evaluation
+    const evaluationResponse = await evaluateConversation(mockRequest as any);
+    const evaluationData = await evaluationResponse.json();
 
-    if (shouldUseAI) {
-      try {
-        const context = session.conversation
-          .slice(-3)
-          .map((c) => `User: ${c.userMessage?.substring(0, 100)}...`)
-          .join(" | ");
-
-        const aiResult = await evaluateWithAI(
-          session.topic,
-          userResponse,
-          context
-        );
-
-        deltaPoints = aiResult.score;
-        feedback = aiResult.feedback;
-        breakdown = aiResult.breakdown;
-        usesAI = true;
-      } catch (aiError) {
-        // Fallback to rule-based
-        console.warn("AI scoring failed, using rule-based:", aiError);
-        const ruleResult = evaluateExplanation(userResponse);
-        deltaPoints = ruleResult.deltaPoints;
-        feedback = ruleResult.feedback;
-        breakdown = ruleResult.breakdown;
-        usesAI = false;
-      }
-    } else {
-      // Use rule-based scoring
-      const ruleResult = evaluateExplanation(userResponse);
-      deltaPoints = ruleResult.deltaPoints;
-      feedback = ruleResult.feedback;
-      breakdown = ruleResult.breakdown;
-      usesAI = false;
+    if (evaluationData.error) {
+      throw new Error(evaluationData.error);
     }
 
     // Update session score
-    session.totalScore += deltaPoints;
+    session.userScore = (session.userScore || 0) + evaluationData.score;
 
-    // Update conversation
-    session.conversation.push({
-      timestamp: new Date(),
-      userMessage: userResponse,
-      feedback,
-    });
+    // Calculate percentage (assuming max score per question is 100)
+    const totalPossibleScore = (session.attempts || 1) * 100;
+    const percentageScore = Math.round(
+      (session.userScore / totalPossibleScore) * 100
+    );
 
-    const percentage = calculatePercentageScore(session.totalScore);
-    const category = getScoreCategory(session.totalScore);
+    // Determine feedback based on score
+    let feedback = "";
+    if (evaluationData.score >= 80) {
+      feedback = "Excellent explanation! You clearly understand this concept.";
+    } else if (evaluationData.score >= 60) {
+      feedback = "Good job! Your explanation covers the main points.";
+    } else if (evaluationData.score >= 40) {
+      feedback =
+        "You're on the right track, but could use more detail or clarity.";
+    } else {
+      feedback =
+        "Try to focus more on the core concepts and provide specific examples.";
+    }
 
     res.json({
-      deltaPoints,
-      totalScore: session.totalScore,
-      percentageScore: percentage,
-      scoreCategory: category,
+      sessionId,
+      score: evaluationData.score,
+      totalScore: session.userScore,
+      percentageScore,
       feedback,
-      breakdown,
-      usesAI,
-      message: `Score: ${session.totalScore}/${800} (${percentage}%) - ${category}`,
+      question,
+      userAnswer,
+      timestamp: new Date(),
+      attempts: session.attempts,
     });
   } catch (error) {
     console.error("Error evaluating feedback:", error);
@@ -229,8 +182,8 @@ router.post("/feedback", async (req, res) => {
   }
 });
 
-// 4. End session
-router.post("/sessions/end", (req, res) => {
+// End session and get final assessment
+router.post("/sessions/end", async (req, res) => {
   try {
     const { sessionId } = req.body;
 
@@ -245,30 +198,52 @@ router.post("/sessions/end", (req, res) => {
 
     session.endTime = new Date();
     session.status = "completed";
+    session.duration = session.endTime.getTime() - session.startTime.getTime();
 
-    const finalAssessment = getFinalAssessment(session.totalScore);
-    const percentage = calculatePercentageScore(session.totalScore);
+    // Calculate final score metrics
+    const totalPossibleScore = (session.attempts || 1) * 100;
+    const finalPercentage =
+      session.attempts > 0
+        ? Math.round((session.userScore / totalPossibleScore) * 100)
+        : 0;
+
+    // Generate final assessment
+    let finalAssessment = "";
+    if (finalPercentage >= 80) {
+      finalAssessment = "Outstanding! You've mastered this topic.";
+    } else if (finalPercentage >= 60) {
+      finalAssessment = "Good work! You have a solid understanding.";
+    } else if (finalPercentage >= 40) {
+      finalAssessment = "You're making progress. Keep practicing!";
+    } else {
+      finalAssessment = "Keep learning! Review the basics and try again.";
+    }
 
     res.json({
       sessionId,
-      finalScore: session.totalScore,
-      percentageScore: percentage,
-      duration: session.endTime.getTime() - session.startTime.getTime(),
-      conversationTurns: session.conversation.length,
+      finalScore: session.userScore || 0,
+      percentageScore: finalPercentage,
+      duration: session.duration,
+      conversationTurns: session.attempts || 0,
       finalAssessment,
-      usedAI: session.useAI,
-      message: `Session completed! Final score: ${session.totalScore}/${800}`,
+      topic: session.topic,
+      startTime: session.startTime,
+      endTime: session.endTime,
+      conversationHistory: session.conversationHistory,
     });
 
-    // Clean up after 5 minutes
-    setTimeout(() => sessions.delete(sessionId), 300000);
+    // Clean up after 10 minutes
+    setTimeout(() => {
+      sessions.delete(sessionId);
+      console.log(`Cleaned up session ${sessionId}`);
+    }, 600000);
   } catch (error) {
     console.error("Error ending session:", error);
     res.status(500).json({ error: "Failed to end session" });
   }
 });
 
-// 5. Get session status
+// Get session status
 router.get("/sessions/:sessionId", (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -278,7 +253,17 @@ router.get("/sessions/:sessionId", (req, res) => {
       return res.status(404).json({ error: "Session not found" });
     }
 
-    res.json(session);
+    res.json({
+      sessionId,
+      topic: session.topic,
+      status: session.status,
+      startTime: session.startTime,
+      userScore: session.userScore || 0,
+      attempts: session.attempts || 0,
+      conversationHistory: session.conversationHistory || [],
+      ...(session.endTime && { endTime: session.endTime }),
+      ...(session.duration && { duration: session.duration }),
+    });
   } catch (error) {
     console.error("Error getting session:", error);
     res.status(500).json({ error: "Failed to get session" });
