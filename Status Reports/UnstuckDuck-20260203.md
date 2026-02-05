@@ -16,10 +16,10 @@ Define API contracts between front and back
 
 **Goals for Next Week**: 
 
-Implement Teaching Session UI - a week - Wesley Li and Yang Wu
-Implement main menu UI - a week - Yang Wu and Wesley Li
-Integrate OpenAI API - a week - Iris Guo
-Implement Teaching Score Logic - a week - Elianna Kim
-Connect frontend inputs to backend responses - a week - Yang Wu
-Test and identify issues - last day - Mia Chavez
-Make assets - one week - Mia Chavez
+* Implement Teaching Session UI - a week - Wesley Li and Yang Wu
+* Implement main menu UI - a week - Yang Wu and Wesley Li
+* Integrate OpenAI API - a week - Iris Guo
+* Implement Teaching Score Logic - a week - Elianna Kim
+* Connect frontend inputs to backend responses - a week - Yang Wu
+* Test and identify issues - last day - Mia Chavez
+* Make assets - one week - Mia Chavez
