@@ -2,7 +2,6 @@ import { expect } from "chai";
 import { describe, it, beforeEach } from "mocha";
 import request from "supertest";
 import express from "express";
-// Remove the duplicate imports that are at the bottom of your file
 
 // Create a simplified test version of the router
 const createTestApp = () => {
