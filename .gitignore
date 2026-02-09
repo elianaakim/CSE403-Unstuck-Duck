@@ -1,5 +1,6 @@
 # Environment variables
 .process.env
+process.env
 .env
 .env.local
 .env.*.local
