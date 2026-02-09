@@ -155,7 +155,10 @@ router.post("/evaluate", async (req, res) => {
 
     // Get AI evaluation
     const evaluationResponse = await evaluateConversation(mockRequest as any);
-    const evaluationData = await evaluationResponse.json();
+    const evaluationData = (await evaluationResponse.json()) as {
+      error?: string;
+      score?: number;
+    };
 
     if (evaluationData.error) {
       throw new Error(evaluationData.error);

@@ -46,7 +46,9 @@ describe("Duck Teaching Assistant", () => {
       try {
         await mockOpenAI.chat.completions.create();
       } catch (error) {
-        expect(error.message).to.equal("API Error");
+        if (error instanceof Error) {
+          expect(error.message).to.equal("API Error");
+        }
       }
     });
   });
