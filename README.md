@@ -33,19 +33,6 @@ cd CSE403-Unstuck-Duck
 npm install
 ```
 
-
-If frontend and backend are separate:
-
-```bash
-cd backend
-npm install
-```
-
-```bash
-cd ../frontend
-npm install
-```
-
 # Running the Application
 Backend
 
@@ -97,12 +84,6 @@ Run all tests with:
 npm test
 ```
 
-Ensure your package.json includes:
-
-"scripts": {
-  "test": "mocha -r ts-node/register tests/**/*.test.ts"
-}
-
 # 🔐 Environment Variables
 
 Create a .env file in the root directory:
@@ -114,9 +95,9 @@ ZOOM_API_KEY=your_key_here
 
 These are required for:
 
-AI powered Socratic questioning
+* AI-powered Socratic questioning
 
-Synchronous study sessions
+* Synchronous study sessions
 
 # Beta Release Tag
 
@@ -124,9 +105,7 @@ The GitHub tag for this beta release is:
 
 beta-release
 
-To check out this release:
-
-git checkout beta-release
+To check out this release: git checkout beta-release
 
 # 📁 Project Structure
 backend/
