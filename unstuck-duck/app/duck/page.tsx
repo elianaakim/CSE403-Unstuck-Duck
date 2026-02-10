@@ -108,7 +108,7 @@ export default function Duck() {
             />
             <Image
                 src="/mic.png"
-                alt="Duck Image"
+                alt="Microphone Button"
                 className="hover:opacity-80 border border-black rounded-full border-4"
                 width={100}
                 height={100}
