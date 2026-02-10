@@ -17,7 +17,9 @@
     "test": "mocha --require ts-node/register --extensions ts \"backend/src/tests/**/*.ts\""
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "cors": "^2.8.5",
+    "openai": "^4.28.4"
   },
   "type": "commonjs"
   "name": "unstuck-duck",
