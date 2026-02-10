@@ -14,9 +14,10 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "test": "mocha --require ts-node/register \"backend/src/tests/*.ts\""
+    "test": "mocha --require ts-node/register --extensions ts \"backend/src/tests/**/*.ts\""
   },
   "dependencies": {
     "express": "^5.2.1"
-  }
+  },
+  "type": "commonjs"
 }
