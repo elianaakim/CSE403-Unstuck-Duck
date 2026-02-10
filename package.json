@@ -31,7 +31,7 @@
     "dev": "ts-node backend/src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "mocha --require ts-node/register src/tests/*.test.ts",
-    "test:watch": "mocha --require ts-node/register --watch src/tests/*.test.ts"
+    "test": "mocha --require ts-node/register \"unstuck-duck/backend/src/tests/*.ts\"",
+    "test:watch": "mocha --require ts-node/register --watch unstuck-duck/backend/src/tests/*.test.ts"
   }
 }
