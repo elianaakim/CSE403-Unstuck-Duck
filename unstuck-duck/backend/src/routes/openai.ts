@@ -98,15 +98,33 @@ export async function evaluateWithAI(
     const content = response.choices[0]?.message?.content || "{}";
     const result = JSON.parse(content);
 
+    const toClampedNumber = (value: any, min: number, max: number): number => {
+      const num =
+        typeof value === "number"
+          ? value
+          : parseFloat(typeof value === "string" ? value : String(value));
+      if (!Number.isFinite(num)) {
+        return min;
+      }
+      return Math.min(max, Math.max(min, num));
+    };
+
+    const rawBreakdown =
+      result && typeof result.breakdown === "object" && result.breakdown !== null
+        ? result.breakdown
+        : {};
+
+    const normalizedBreakdown = {
+      clarity: toClampedNumber(rawBreakdown.clarity, 0, 25),
+      depth: toClampedNumber(rawBreakdown.depth, 0, 25),
+      examples: toClampedNumber(rawBreakdown.examples, 0, 25),
+      understanding: toClampedNumber(rawBreakdown.understanding, 0, 25),
+    };
+
     return {
-      score: result.score,
+      score: toClampedNumber(result.score, 0, 100),
       feedback: result.feedback || "AI evaluation failed",
-      breakdown: result.breakdown || {
-        clarity: 0,
-        depth: 0,
-        examples: 0,
-        coherence: 0,
-      },
+      breakdown: normalizedBreakdown,
     };
   } catch (error) {
     console.error("AI evaluation failed:", error);
