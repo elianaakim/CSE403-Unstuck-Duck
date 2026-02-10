@@ -23,6 +23,6 @@
 * backend edgecases - 3 days - Ava
 * begin zoom integration - one week - Eli, Iris
 * Teaching session UI polish - 1 day - Wesley, Yang, and Mia
-* deploy application for web hosting - 2 days
+* deploy application for web hosting - 2 days - Yang
 * begin image generation - one week - Eli, Iris
 * more assets - 4 days - Mia 
