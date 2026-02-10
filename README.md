@@ -1,5 +1,5 @@
 # Unstuck Duck
-# 📘 Abstract
+# Abstract
 
 One of the most effective ways to learn is to teach. We decided to leverage generative AI to turn any learner into a teacher. With Unstuck Duck, users teach a sentient rubber duck any concept they want. The duck responds with follow-up questions when explanations are unclear, asks for examples, and challenges oversimplifications.
 
@@ -17,7 +17,7 @@ We also support synchronous study sessions using the Zoom API, allowing learners
 
 By encouraging users to explain concepts clearly and respond thoughtfully to questions, Unstuck Duck promotes mastery rather than passive consumption.
 
-# 🌍 Impact
+# Impact
 
 Unstuck Duck lowers the barrier to effective learning by making high quality practice accessible to anyone with a device. Because the system adapts to the user’s level and improves with more interaction, it supports both beginners and advanced learners.
 
@@ -46,7 +46,7 @@ cd ../frontend
 npm install
 ```
 
-# ▶️ Running the Application
+# Running the Application
 Backend
 
 Start the backend server:
@@ -87,7 +87,7 @@ Frontend runs on:
 http://localhost:5173
 ```
 
-# 🧪 Running Tests
+# Running Tests
 
 This project uses Mocha, Chai, and Supertest.
 
@@ -118,7 +118,7 @@ AI powered Socratic questioning
 
 Synchronous study sessions
 
-# 🏷 Beta Release Tag
+# Beta Release Tag
 
 The GitHub tag for this beta release is:
 
