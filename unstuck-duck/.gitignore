@@ -1,0 +1,24 @@
+# Environment variables
+.process.env
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+.next/
+
+# Build outputs
+dist/
+build/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
