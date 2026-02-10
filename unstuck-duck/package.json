@@ -13,6 +13,9 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
+  "scripts": {
+    "test": "mocha --require ts-node/register \"backend/src/tests/*.ts\""
+  },
   "dependencies": {
     "express": "^5.2.1"
   }
