@@ -78,9 +78,10 @@ router.post("/ask", async (req, res) => {
     });
 
     // Generate AI follow-up question
+    const conversationHistoryWithoutLastUser = session.conversationHistory.slice(0, -1);
     const followUpQuestion = await generateFollowUpQuestion(
       session.topic,
-      session.conversationHistory,
+      conversationHistoryWithoutLastUser,
       userResponse
     );
 
