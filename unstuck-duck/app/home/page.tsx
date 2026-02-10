@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   const selections: string[] = ["Duck", "Lake", "Courses"];
@@ -47,11 +48,11 @@ export default function Home() {
                 draggable="false"
                 onClick={handleLeftClick}
               />
-              {leftArrow()}
+              {renderLeftArrow()}
             </div>
             <div className="">
               <Image
-                src="/duck.png"
+                src="/lilduc.png"
                 alt="Duck Image"
                 className=""
                 width={FRONT_IMG_SIZE}
@@ -69,7 +70,7 @@ export default function Home() {
                 draggable="false"
                 onClick={handleRightClick}
               />
-              {rightArrow()}
+              {renderRightArrow()}
             </div>
           </div>
         );
@@ -78,7 +79,7 @@ export default function Home() {
           <div className="flex w-full h-3/4 flex-row justify-center space-x-4">
             <div>
               <Image
-                src="/duck.png"
+                src="/lilduc.png"
                 alt="Duck Image"
                 className=""
                 width={BACK_IMG_SIZE}
@@ -86,14 +87,14 @@ export default function Home() {
                 draggable="false"
                 onClick={handleLeftClick}
               />
-              {leftArrow()}
+              {renderLeftArrow()}
             </div>
             <Image
               src="/lake.png"
               alt="Lake Image"
               className=""
-              width={300}
-              height={300}
+              width={FRONT_IMG_SIZE}
+              height={FRONT_IMG_SIZE}
               draggable="false"
             />
             <div>
@@ -106,7 +107,7 @@ export default function Home() {
                 draggable="false"
                 onClick={handleRightClick}
               />
-              {rightArrow()};
+              {renderRightArrow()};
             </div>
           </div>
         );
@@ -123,19 +124,19 @@ export default function Home() {
                 draggable="false"
                 onClick={handleLeftClick}
               />
-              {leftArrow()}
+              {renderLeftArrow()}
             </div>
             <Image
               src="/courses.png"
               alt="Courses Image"
               className=""
-              width={300}
-              height={300}
+              width={FRONT_IMG_SIZE}
+              height={FRONT_IMG_SIZE}
               draggable="false"
             />
             <div>
               <Image
-                src="/duck.png"
+                src="/lilduc.png"
                 alt="Duck Image"
                 className=""
                 width={BACK_IMG_SIZE}
@@ -143,14 +144,14 @@ export default function Home() {
                 draggable="false"
                 onClick={handleRightClick}
               />
-              {rightArrow()}
+              {renderRightArrow()}
             </div>
           </div>
         );
     }
   }
 
-  function leftArrow() {
+  function renderLeftArrow() {
     return (
       <Image
         src="/left-circle-arrow.png"
@@ -164,7 +165,7 @@ export default function Home() {
     );
   }
 
-  function rightArrow() {
+  function renderRightArrow() {
     return (
       <Image
         src="/right-circle-arrow.png"
@@ -178,17 +179,28 @@ export default function Home() {
     );
   }
 
+  function onPageButtonClick(): string {
+    switch (selected) {
+      case 0:
+        return "/duck";
+      case 1:
+        return "/lake";
+      default:
+        return "/classroom";
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-white font-sans text-black">
       <main className="flex min-h-screen w-full flex-col items-center justify-center bg-white sm:items-start text-black">
         {showCarousel()}
         <div className="flex w-full h-1/5 flex-row justify-center">
-          <button
-            className="w-30 h-16 bg-black text-lg text-white"
-            onClick={alert}
+          <Link
+            href={onPageButtonClick()}
+            className="flex flex-col w-30 h-16 bg-black text-lg text-white text-center justify-center"
           >
             {selections[selected]}
-          </button>
+          </Link>
         </div>
       </main>
     </div>
