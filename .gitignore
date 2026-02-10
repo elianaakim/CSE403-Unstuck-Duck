@@ -6,6 +6,7 @@
 
 # Dependencies
 node_modules/
+unstuck-duck/.next
 
 # Build outputs
 dist/
