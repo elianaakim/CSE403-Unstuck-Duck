@@ -5,13 +5,14 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/mocha": "^10.0.10",
-    "@types/sinon": "^10.0.0",
-    "@types/supertest": "^2.0.12",
+    "@types/node": "^25.2.2",
+    "@types/sinon": "^10.0.20",
+    "@types/supertest": "^2.0.16",
     "chai": "^4.5.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
-    "express": "^4.18.2",
+    "express": "^4.22.1",
     "globals": "^17.3.0",
     "jiti": "^2.6.1",
     "mocha": "^10.8.2",
@@ -24,7 +25,6 @@
   },
   "dependencies": {
     "cors": "^2.8.6",
-    "express": "^5.2.1",
     "openai": "^6.17.0"
   },
   "scripts": {
