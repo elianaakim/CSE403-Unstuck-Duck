@@ -7,7 +7,7 @@ import React from "react";
 
 const Message = (user : {name: string; image: string; time: string; message: string}) => {
     return (
-        <div className="p-4 border-b border-gray-200 w-100">
+        <div className="p-4 border-b border-gray-200">
             <div className="flex items-start">
                 
                 <Image
