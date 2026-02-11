@@ -128,23 +128,38 @@ router.post("/evaluate", async (req, res) => {
     let lastQuestion = "";
     let lastUserAnswer = "";
 
-    // Find the last assistant question and user response
-    for (let i = conversation.length - 1; i >= 0; i--) {
-      if (conversation[i].role === "user" && !lastUserAnswer) {
-        lastUserAnswer = conversation[i].content;
-      }
-      if (conversation[i].role === "assistant" && !lastQuestion) {
-        lastQuestion = conversation[i].content;
-      }
-      if (lastQuestion && lastUserAnswer) break;
-    }
-
-    if (!lastQuestion || !lastUserAnswer) {
+    // Find the last user response and take the immediately preceding assistant message as the question
+    if (!Array.isArray(conversation) || conversation.length < 2) {
       return res.status(400).json({
         error: "Need at least one question and answer to evaluate teaching",
       });
     }
 
+    let lastUserIndex = -1;
+    for (let i = conversation.length - 1; i >= 0; i--) {
+      if (conversation[i].role === "user") {
+        lastUserIndex = i;
+        break;
+      }
+    }
+
+    if (lastUserIndex <= 0) {
+      return res.status(400).json({
+        error: "Need at least one question and answer to evaluate teaching",
+      });
+    }
+
+    const userMessage = conversation[lastUserIndex];
+    const questionMessage = conversation[lastUserIndex - 1];
+
+    if (!userMessage || !questionMessage || questionMessage.role !== "assistant") {
+      return res.status(400).json({
+        error: "Need at least one question and answer to evaluate teaching",
+      });
+    }
+
+    lastUserAnswer = userMessage.content;
+    lastQuestion = questionMessage.content;
     // Create a mock request object for evaluateConversation
     const mockRequest = {
       json: async () => ({
