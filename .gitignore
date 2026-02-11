@@ -1,0 +1,25 @@
+# Environment variables
+.process.env
+process.env
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+unstuck-duck/.next
+
+# Build outputs
+dist/
+build/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
