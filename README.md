@@ -1,15 +1,15 @@
 # Unstuck Duck
 # Abstract
 
-One of the most effective ways to learn is to teach. We decided to leverage generative AI to turn any learner into a teacher. With Unstuck Duck, users teach a sentient rubber duck any concept they want. The duck responds with follow-up questions when explanations are unclear, asks for examples, and challenges oversimplifications.
+One of the most effective ways to learn is to teach. We decided to leverage generative AI to turn any learner into a teacher. With Unstuck Duck, users teach a sentient rubber duck any concept they want. The duck responds with follow-up questions when explanations are unclear, asks for specific examples, and challenges oversimplified explanations.
 
 Instead of providing answers directly, Unstuck Duck evaluates how well the concept was taught and offers a teaching score that reflects how a student would perform based solely on the user’s explanation. The more you teach your rubber duck, the more you refine your own understanding.
 
-By shifting generative AI from answer generation to guided questioning and feedback, Unstuck Duck helps users build deeper understanding and long term mastery.
+By shifting generative AI from answer generation to guided questioning and feedback, Unstuck Duck helps users build a deeper understanding and long-term mastery.
 
-# 💡 Our Solution
+# Our Solution
 
-We strive to turn indirect learning into direct teaching. Users teach their topic to a rubber duck that behaves like a curious student. Based on the explanation, the duck asks clarifying questions, requests examples, and points out inconsistencies. This pseudo teaching experience encourages deep learning rather than surface level memorization.
+We strive to turn indirect learning into direct teaching. Users teach their topic to a rubber duck that behaves like a curious student. Based on the explanation, the duck asks clarifying questions, requests examples, and points out inconsistencies. This pseudo-teaching experience encourages deep learning rather than surface-level memorization.
 
 At any point, the user can request a Teaching Score. This score represents how well the duck would perform on a test using only the information provided by the user. The feedback highlights weak points and areas for improvement.
 
@@ -19,11 +19,11 @@ By encouraging users to explain concepts clearly and respond thoughtfully to que
 
 # Impact
 
-Unstuck Duck lowers the barrier to effective learning by making high quality practice accessible to anyone with a device. Because the system adapts to the user’s level and improves with more interaction, it supports both beginners and advanced learners.
+Unstuck Duck lowers the barrier to effective learning by making high-quality practice accessible to anyone with a device. Because the system adapts to the user’s level and improves with more interaction, it supports both beginners and advanced learners.
 
-Unlike traditional AI tools that provide answers, Unstuck Duck assumes the role of a student. This encourages independence, reasoning skills, and confidence. If successful, the product helps learners develop explanation skills, critical thinking, and self assessment abilities.
+Unlike traditional AI tools that provide answers, Unstuck Duck assumes the role of a student. This encourages independence, reasoning skills, and confidence. If successful, the product helps learners develop explanation skills, critical thinking, and self-assessment abilities.
 
-# 🛠 Installation
+# Installation
 
 Clone the repository and install dependencies:
 
@@ -34,9 +34,7 @@ npm install
 ```
 
 # Running the Application
-Backend
-
-Start the backend server:
+Start the application:
 
 ```bash
 npm run dev
@@ -45,38 +43,18 @@ npm run dev
 Or:
 
 ```bash
-npx ts-node src/server.ts
+npm start
 ```
 
-Backend runs on:
+The application will run locally at:
 
 ```bash
 http://localhost:3000
 ```
 
-Frontend
-
-Start the frontend:
-
-```bash
-npm start
-```
-
-or
-
-```bash
-npm run dev
-```
-
-Frontend runs on:
-
-```bash
-http://localhost:5173
-```
-
 # Running Tests
 
-This project uses Mocha, Chai, and Supertest.
+This project uses Mocha, Chai, and Supertest for testing.
 
 Run all tests with:
 
@@ -84,33 +62,34 @@ Run all tests with:
 npm test
 ```
 
-# 🔐 Environment Variables
-
-Create a .env file in the root directory:
+Ensure your package.json includes a test script similar to:
 
 ```bash
-OPENAI_API_KEY=your_key_here
-ZOOM_API_KEY=your_key_here
+"scripts": {
+  "test": "mocha -r ts-node/register tests/**/*.test.ts"
+}
 ```
-
-These are required for:
-
-* AI-powered Socratic questioning
-
-* Synchronous study sessions
 
 # Beta Release Tag
 
 The GitHub tag for this beta release is:
 
+```bash
 beta-release
+```
 
-To check out this release: git checkout beta-release
+To check out this release: 
 
-# 📁 Project Structure
-backend/
-  src/
-  tests/
+```bash
+git checkout beta-release
+```
 
-frontend/
-  src/
+Creating the tag
+If you need to recreate the tag:
+
+```bash
+git tag beta-release
+git push origin beta-release
+```
+
+This tag identifies the commits that comprise the beta release of the software, as required by the project rubric
