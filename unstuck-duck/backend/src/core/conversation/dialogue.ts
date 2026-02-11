@@ -1,4 +1,4 @@
-import { openaiClient } from "../../routes/openai";
+import { ollamaClient } from "../../routes/ollama";
 
 /**
  * Generates the first question to start the conversation
@@ -6,8 +6,8 @@ import { openaiClient } from "../../routes/openai";
  */
 export async function generateFirstQuestion(subject: string): Promise<string> {
   try {
-    const response = await openaiClient.chat.completions.create({
-      model: "gpt-3.5-turbo",
+    const response = await ollamaClient.chat({
+      model: "gpt-oss",
       messages: [
         {
           role: "system",
@@ -18,14 +18,13 @@ export async function generateFirstQuestion(subject: string): Promise<string> {
           content: `Generate a first question to ask about ${subject}`,
         },
       ],
-      max_tokens: 100,
-      temperature: 0.8,
+      options: {
+        num_predict: 100,
+        temperature: 0.8,
+      },
     });
 
-    return (
-      response.choices[0].message?.content ||
-      `Hi! Can you teach me about ${subject}?`
-    );
+    return response.message.content || `Hi! Can you teach me about ${subject}?`;
   } catch (error) {
     console.error("Error generating first question:", error);
     return `Hi! Can you teach me about ${subject}?`;
@@ -63,16 +62,17 @@ export async function generateFollowUpQuestion(
       },
     ];
 
-    const response = await openaiClient.chat.completions.create({
-      model: "gpt-3.5-turbo",
+    const response = await ollamaClient.chat({
+      model: "gpt-oss",
       messages: messages as any,
-      max_tokens: 150,
-      temperature: 0.8,
+      options: {
+        num_predict: 150,
+        temperature: 0.8,
+      },
     });
 
     return (
-      response.choices[0].message?.content ||
-      "That's interesting! Can you tell me more?"
+      response.message.content || "That's interesting! Can you tell me more?"
     );
   } catch (error) {
     console.error("Error generating follow-up question:", error);
