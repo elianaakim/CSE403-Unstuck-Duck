@@ -49,7 +49,7 @@ npm start
 The application will run locally at:
 
 ```bash
-http://localhost:3000
+http://localhost:11434
 ```
 
 # Running Tests
