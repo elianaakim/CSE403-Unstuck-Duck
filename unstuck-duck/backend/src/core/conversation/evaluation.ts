@@ -1,4 +1,4 @@
-import { evaluateTeachingScore } from "../../routes/openai";
+import { evaluateTeachingScore } from "../../routes/ollama";
 
 // Evaluates the student with a teaching score from 1-100.
 export async function evaluateConversation(req: any) {
@@ -8,8 +8,8 @@ export async function evaluateConversation(req: any) {
 
     // Validation
     if (!question || !userAnswer || !subject) {
-      return Response.json(
-        { error: "Missing required fields" },
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
         { status: 400 }
       );
     }
