@@ -75,7 +75,7 @@ export default function Duck() {
         <main className="flex min-h-screen w-full max-w-3xl flex-col flex-row items-center justify-center py-32 px-16 bg-white">
             <div className="text-black border p-4">
                 <h1 className="text-3xl">
-                    Transcipt
+                    Transcript
                 </h1>
                 {messages.map((eachItem) => (
                 <Message 
