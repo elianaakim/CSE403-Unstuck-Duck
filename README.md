@@ -38,17 +38,17 @@ npm install
 Start the application:
 
 ```bash
-npm run dev
-```
-
-Or:
-
-```bash
-npm start
+cd unstuck-duck && npm run dev
 ```
 
 The application will run locally at:
 
+For frontend:
+```bash
+http://localhost:3000
+```
+
+For backend (ollama):
 ```bash
 http://localhost:11434
 ```
@@ -61,14 +61,6 @@ Run all tests with:
 
 ```bash
 npm test
-```
-
-Ensure your package.json includes a test script similar to:
-
-```bash
-"scripts": {
-  "test": "mocha -r ts-node/register tests/**/*.test.ts"
-}
 ```
 
 # Beta Release Tag
