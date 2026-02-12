@@ -1,10 +1,16 @@
 import { evaluateTeachingScore } from "../../routes/ollama";
 
 // Evaluates the student with a teaching score from 1-100.
-export async function evaluateConversation(req: any) {
+type EvaluationRequestBody = {
+  question: string;
+  userAnswer: string;
+  subject: string;
+};
+
+export async function evaluateConversation(req: Request) {
   try {
-    const body = await req.json();
-    const { question, userAnswer, subject } = body || {};
+    const body = (await req.json()) as EvaluationRequestBody;
+    const { question, userAnswer, subject } = body;
 
     // Validation
     if (!question || !userAnswer || !subject) {
