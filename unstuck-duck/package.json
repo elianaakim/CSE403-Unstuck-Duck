@@ -1,4 +1,33 @@
 {
+  "devDependencies": {
+    "@types/chai": "^5.2.3",
+    "@types/express": "^5.0.6",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^25.2.2",
+    "@types/sinon": "^21.0.0",
+    "@types/supertest": "^6.0.3",
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "sinon": "^21.0.1",
+    "supertest": "^7.2.2",
+    "ts-node": "^10.9.2",
+    "@tailwindcss/postcss": "^4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "cors": "^2.8.5",
+    "openai": "^4.28.4",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "type": "commonjs",
   "name": "unstuck-duck",
   "version": "0.1.0",
   "private": true,
@@ -6,21 +35,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "lint": "eslint",
+    "test": "mocha --require ts-node/register --extensions ts \"backend/src/tests/**/*.ts\""
   }
 }

@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+          cache-dependency-path: './unstuck-duck/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./unstuck-duck
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./unstuck-duck
+        run: npm test
