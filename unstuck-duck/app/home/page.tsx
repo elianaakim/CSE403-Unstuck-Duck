@@ -107,7 +107,7 @@ export default function Home() {
                 draggable="false"
                 onClick={handleRightClick}
               />
-              {renderRightArrow()};
+              {renderRightArrow()}
             </div>
           </div>
         );
