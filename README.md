@@ -30,6 +30,7 @@ Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/elianaakim/CSE403-Unstuck-Duck.git
 cd CSE403-Unstuck-Duck
+cd unstuck-duck
 npm install
 ```
 
