@@ -44,7 +44,7 @@ const Navbar: React.FunctionComponent<INavbarProps> = (props) => {
               href={eachItem.href}
               className={
                 `${isActive(eachItem.href) ? "text-spotify-green" : ""}` +
-                "hover:text-gray-600"
+                " hover:text-gray-600"
               }
             >
               {eachItem.label}
