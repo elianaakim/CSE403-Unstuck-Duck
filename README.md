@@ -29,8 +29,7 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/elianaakim/CSE403-Unstuck-Duck.git
-cd CSE403-Unstuck-Duck
-cd unstuck-duck
+cd CSE403-Unstuck-Duck/unstuck-duck
 npm install
 ```
 
@@ -38,7 +37,8 @@ npm install
 Start the application:
 
 ```bash
-cd unstuck-duck && npm run dev
+cd unstuck-duck
+npm run dev
 ```
 
 The application will run locally at:
@@ -56,6 +56,8 @@ http://localhost:11434
 # Running Tests
 
 This project uses Mocha, Chai, and Supertest for testing.
+
+Make sure to run all npm commands from /unstuck-duck/!
 
 Run all tests with:
 
