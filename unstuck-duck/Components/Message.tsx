@@ -1,8 +1,6 @@
 "use client"
 
-import Link from "next/link";
 import Image from "next/image";
-import React from "react";
 
 
 const Message = (user : {name: string; image: string; time: string; message: string}) => {

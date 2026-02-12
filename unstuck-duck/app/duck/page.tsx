@@ -32,7 +32,7 @@ export default function Duck() {
         setChat(event.target.value);
     }
     
-    const handleInputSubmit = async (event: React.SubmitEvent<HTMLInputElement>) => {
+    const handleInputSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
         const newMessage = {
             message_id: (messages.length + 1).toString(),
@@ -86,13 +86,12 @@ export default function Duck() {
                     message= {eachItem.message}
                 />
                 ))}
-                <form>
+                <form onSubmit={handleInputSubmit}>
                     <TextInput
                         id="chatbox"
                         label=""
                         value={chat}
                         onChange={handleInputChange}
-                        onSubmit={handleInputSubmit}
                         placeholder="Ask anything"
                         required
                     />
