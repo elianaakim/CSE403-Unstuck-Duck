@@ -1,7 +1,7 @@
 import { evaluateTeachingScore } from "../../routes/ollama";
 
 // Evaluates the student with a teaching score from 1-100.
-export async function evaluateConversation(req: any) {
+export async function evaluateConversation(req: Request) {
   try {
     const body = await req.json();
     const { question, userAnswer, subject } = body || {};
