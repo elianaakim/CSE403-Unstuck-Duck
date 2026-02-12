@@ -57,13 +57,13 @@ http://localhost:11434
 
 This project uses Mocha, Chai, and Supertest for testing.
 
-Make sure to run all npm commands from `/unstuck-duck/`!
-
 Run all tests with:
 
+Make sure to run all npm commands from `/unstuck-duck/`!
 ```bash
 npm test
 ```
+
 
 # Beta Release Tag
 
