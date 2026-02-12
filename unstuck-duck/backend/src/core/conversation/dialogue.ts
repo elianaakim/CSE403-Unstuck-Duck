@@ -64,7 +64,7 @@ export async function generateFollowUpQuestion(
 
     const response = await ollamaClient.chat({
       model: "gpt-oss",
-      messages: messages as any,
+      messages: messages as Array<{ role: string; content: string }>,
       options: {
         num_predict: 150,
         temperature: 0.8,

@@ -1,30 +1,34 @@
 import { evaluateTeachingScore } from "../../routes/ollama";
 
-// Evaluates the student with a teaching score from 1-100.
-export async function evaluateConversation(req: any) {
-  try {
-    const body = await req.json();
-    const { question, userAnswer, subject } = body || {};
+export interface EvaluationInput {
+  question: string;
+  userAnswer: string;
+  subject: string;
+}
 
-    // Validation
-    if (!question || !userAnswer || !subject) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        { status: 400 }
-      );
-    }
+export interface EvaluationResult {
+  score: number;
+}
 
-    // Get AI-generated score
-    const score = await evaluateTeachingScore(question, userAnswer, subject);
+export async function evaluateConversation(
+  input: EvaluationInput
+): Promise<EvaluationResult> {
+  const { question, userAnswer, subject } = input;
 
-    return new Response(JSON.stringify({ score }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Error evaluating conversation:", error);
-    return new Response(JSON.stringify({ error: "Failed to evaluate" }), {
-      status: 500,
-    });
+  // Basic validation
+  if (
+    !question ||
+    typeof question !== "string" ||
+    !userAnswer ||
+    typeof userAnswer !== "string" ||
+    !subject ||
+    typeof subject !== "string"
+  ) {
+    throw new Error("Missing required fields");
   }
+
+  // Call your Ollama scoring function
+  const score = await evaluateTeachingScore(question, userAnswer, subject);
+
+  return { score };
 }
