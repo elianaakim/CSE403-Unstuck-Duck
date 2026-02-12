@@ -9,25 +9,19 @@ export default function Home() {
   const [selected, setSelected] = useState(0);
 
   function handleLeftClick() {
-    const newSelected = (((selected - 1) % 3) + 3) % 3;
-    console.log(
-      `Swapping from ${selections[selected]} to ${selections[newSelected]}`,
-    );
-    if (newSelected < 0 || newSelected > 2) {
-      throw new Error(`selected ${newSelected} not in range 0 to 2!`);
-    }
-    setSelected(newSelected);
+    setSelected((prevSelected) => {
+      const length = selections.length;
+      const nextIndex = (((prevSelected - 1) % length) + length) % length;
+      return nextIndex;
+    });
   }
 
   function handleRightClick() {
-    const newSelected = (((selected + 1) % 3) + 3) % 3;
-    console.log(
-      `Swapping from ${selections[selected]} to ${selections[newSelected]}`,
-    );
-    if (newSelected < 0 || newSelected > 2) {
-      throw new Error(`selected ${newSelected} not in range 0 to 2!`);
-    }
-    setSelected(newSelected);
+    setSelected((prevSelected) => {
+      const length = selections.length;
+      const nextIndex = (((prevSelected + 1) % length) + length) % length;
+      return nextIndex;
+    });
   }
 
   const BACK_IMG_SIZE = 150;
