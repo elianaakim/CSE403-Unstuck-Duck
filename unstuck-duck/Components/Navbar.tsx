@@ -33,7 +33,7 @@ const Navbar: React.FunctionComponent<INavbarProps> = (props) => {
     <nav className="pb-4 pt-2 flex justify-between items-center">
       <Link
         href="/home"
-        className="ml-4 text-lg md:text-3xl font-bold hover:text-gray-400"
+        className="ml-4 text-lg md:text-3xl font-bold !text-slate-900 !no-underline hover:!text-gray-400"
       >
         unstuck duck
       </Link>
@@ -44,7 +44,7 @@ const Navbar: React.FunctionComponent<INavbarProps> = (props) => {
               href={eachItem.href}
               className={
                 `${isActive(eachItem.href) ? "text-spotify-green" : ""}` +
-                " hover:text-gray-600"
+                " !text-slate-900 !no-underline hover:!text-gray-600"
               }
             >
               {eachItem.label}
