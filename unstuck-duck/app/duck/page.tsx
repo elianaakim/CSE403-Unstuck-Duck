@@ -34,14 +34,7 @@ export default function Duck() {
     
     const handleInputSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const newMessage = {
-            message_id: (messages.length + 1).toString(),
-            name: "Rohan Boin",
-            image: "/rohankb.png",
-            time: new Date(),
-            message: chat
-        };
-        setMessages(prevMessages => [...prevMessages, newMessage]); 
+        handleButtonClick();
         
     };
 
