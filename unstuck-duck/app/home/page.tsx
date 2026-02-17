@@ -9,7 +9,7 @@ const SLIDES = [
     id: "duck",
     label: "Duck",
     href: "/duck",
-    src: "/lilduc.png",
+    src: "/duck_l.png",
     alt: "Duck Image",
     tagline: "Chat with your rubber duck tutor",
     accent: "#facc15",
@@ -51,23 +51,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-neutral-950 font-sans overflow-hidden transition-colors duration-300">
-
-      {/* ── Navbar ── */}
-      <nav className="w-full px-8 py-5 flex items-center justify-between border-b border-stone-200 dark:border-white/10 bg-stone-50/80 dark:bg-neutral-950/80 sticky top-0 z-50 transition-colors duration-300"
-        style={{ backdropFilter: "blur(12px)" }}>
-        <div className="flex items-center gap-2.5">
-          <span className="text-2xl">🦆</span>
-          <span className="text-base font-bold tracking-tight text-stone-900 dark:text-white transition-colors duration-300">
-            Unstuck Duck
-          </span>
-        </div>
-        <Link
-          href="/login"
-          className="text-sm font-semibold px-5 py-2 rounded-full transition-colors duration-300 bg-stone-900 text-white hover:bg-stone-700 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
-        >
-          Sign In
-        </Link>
-      </nav>
 
       {/* ── Hero text ── */}
       <div className="text-center pt-16 pb-8 px-4">

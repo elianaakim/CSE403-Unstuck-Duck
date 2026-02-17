@@ -163,9 +163,9 @@ export default function Duck() {
 
         {/* ── Left: duck + controls ── */}
         <aside className="flex flex-col items-center gap-6 w-56 flex-shrink-0 pt-4">
-          <div className="relative">
+          <div className={`relative ${status === "active" ? "" : "hidden"}`}>
             <div className={`absolute inset-0 rounded-full blur-2xl scale-110 bg-amber-400 transition-opacity duration-500 ${status === "active" ? "opacity-30" : "opacity-10"}`} />
-            <Image src="/duck.png" alt="Duck" width={180} height={180} className="relative drop-shadow-xl" />
+            <Image src="/duck_l.png" alt="Duck" width={180} height={180} className="relative drop-shadow-xl" />
           </div>
 
           {/* Score badge */}
