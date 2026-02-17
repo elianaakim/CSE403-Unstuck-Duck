@@ -61,14 +61,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-neutral-950 font-sans overflow-hidden">
 
-      {/* ── Navbar ── matches homepage */}
-      <nav className="w-full px-8 py-5 flex items-center justify-between border-b border-white/10 bg-neutral-950/80 sticky top-0 z-50">
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="text-2xl">🦆</span>
-          <span className="text-base font-bold tracking-tight text-white">Unstuck Duck</span>
-        </Link>
-      </nav>
-
       {/* ── Main ── */}
       <div className="flex-1 flex items-center justify-center px-4 py-12 relative">
 
