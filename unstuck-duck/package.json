@@ -21,13 +21,13 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@zoom/meetingsdk": "^3.13.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.2.1",
     "next": "16.1.6",
     "ollama": "^0.6.3",
     "openai": "^4.28.4",
-    "@zoom/meetingsdk": "^3.11.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
