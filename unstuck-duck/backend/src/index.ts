@@ -1,6 +1,8 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import duckRoutes from "./routes/duckRoutes";
+import zoomRoutes from "./routes/zoom";
 
 const app = express();
 app.use(cors());
@@ -13,6 +15,7 @@ app.get("/health", (req, res) => {
 
 // Duck API routes
 app.use("/api/duck", duckRoutes);
+app.use("/api/zoom", zoomRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
