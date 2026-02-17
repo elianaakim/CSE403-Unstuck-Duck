@@ -63,28 +63,3 @@ Make sure to run all npm commands from `/unstuck-duck/`!
 ```bash
 npm test
 ```
-
-
-# Beta Release Tag
-
-The GitHub tag for this beta release is:
-
-```bash
-beta-release
-```
-
-To check out this release: 
-
-```bash
-git checkout beta-release
-```
-
-Creating the tag
-If you need to recreate the tag:
-
-```bash
-git tag beta-release
-git push origin beta-release
-```
-
-This tag identifies the commits that comprise the beta release of the software, as required by the project rubric
