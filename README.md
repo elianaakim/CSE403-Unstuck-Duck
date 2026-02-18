@@ -84,3 +84,8 @@ Our core use case is fully functional:
 3. The duck responds with clarifying questions.
 
 4. The user can request a Teaching Score, which evaluates how well the concept was taught based solely on the user’s explanation.
+
+To naviagate to the duck, either press the on screen keys and click the duck icon or vist
+```bash
+http://localhost:3000/duck
+```
