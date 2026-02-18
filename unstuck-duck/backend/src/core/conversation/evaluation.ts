@@ -15,16 +15,21 @@ export async function evaluateConversation(
 ): Promise<EvaluationResult> {
   const { question, userAnswer, subject } = input;
 
-  // Basic validation
-  if (
-    !question ||
-    typeof question !== "string" ||
-    !userAnswer ||
-    typeof userAnswer !== "string" ||
-    !subject ||
-    typeof subject !== "string"
-  ) {
-    throw new Error("Missing required fields");
+    if (score === -1) {
+      return new Response(JSON.stringify({ error: "Failed to parse score" }), {
+        status: 500,
+      });
+    }
+
+    return new Response(JSON.stringify({ score }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error evaluating conversation:", error);
+    return new Response(JSON.stringify({ error: "Failed to evaluate" }), {
+      status: 500,
+    });
   }
 
   // Call your Ollama scoring function

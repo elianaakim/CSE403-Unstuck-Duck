@@ -18,7 +18,7 @@
     "nodemon": "^3.1.11",
     "sinon": "^21.0.1",
     "supertest": "^7.2.2",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.18",
     "ts-node": "^10.9.2",
     "typescript": "^5"
   },
@@ -26,6 +26,7 @@
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "next": "16.1.6",
+    "next-themes": "^0.4.6",
     "ollama": "^0.6.3",
     "openai": "^4.28.4",
     "react": "19.2.3",
@@ -39,6 +40,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "mocha --require ts-node/register --extensions ts \"backend/src/tests/**/*.ts\""
+    "test": "mocha --require ts-node/register --extensions ts \"backend/src/tests/**/*.ts\"",
+    "backend": "ts-node backend/src/index.ts"
   }
 }
