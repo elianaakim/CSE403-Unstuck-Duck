@@ -3,10 +3,10 @@ import { getSessionsStore } from "../../../lib/sessionsStore";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const { sessionId } = params;
+    const { sessionId } = await params;
     const sessions = getSessionsStore();
     const session = sessions.get(sessionId);
 
