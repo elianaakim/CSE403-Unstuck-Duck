@@ -12,9 +12,13 @@ export interface EvaluationResult {
 
 export async function evaluateConversation(
   input: EvaluationInput
-): Promise<EvaluationResult> {
+): Promise<Response> {
   const { question, userAnswer, subject } = input;
 
+  try {
+    
+    const score = await evaluateTeachingScore(question, userAnswer, subject);
+    
     if (score === -1) {
       return new Response(JSON.stringify({ error: "Failed to parse score" }), {
         status: 500,
@@ -31,9 +35,4 @@ export async function evaluateConversation(
       status: 500,
     });
   }
-
-  // Call your Ollama scoring function
-  const score = await evaluateTeachingScore(question, userAnswer, subject);
-
-  return { score };
 }
