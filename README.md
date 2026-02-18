@@ -33,7 +33,7 @@ cd CSE403-Unstuck-Duck/unstuck-duck
 npm install
 ```
 
-Install Ollama to locally run
+Install Ollama to run locally:
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -63,7 +63,7 @@ http://localhost:11434
 
 The GitHub tag for this milestone is:
 ```bash
-v0.2.0-beta
+v0.1.0-beta
 ```
 
 To check out the exact commit set for this release:
@@ -84,15 +84,25 @@ npm test
 # Operational Use Case: Teaching the Duck a Concept
 Our core use case is fully functional:
 
-1. The user explains a concept to the duck through the frontend interface.
+1. Input username `a@a.com` and password `1234` into login form
+  
+2. Press the "Sign In" button
+     - Chrome might warn you about an insecure password; feel free to ignore
+  
+3. Once on the home page, make sure the carousel is selected on "Duck" and press "Go To Duck"
 
-2. The backend (via Ollama) analyzes the explanation.
+4. Enter a topic of choice (ex. Bubbles)
 
-3. The duck responds with clarifying questions.
+5. Explain the concept of choice to the duck through the frontend interface (ex. Bubbles can pop)
 
-4. The user can request a Teaching Score, which evaluates how well the concept was taught based solely on the user’s explanation.
+6. The backend (via Ollama) analyzes the explanation and responds with follow-up questions.
 
-To naviagate to the duck, either press the on screen keys and click the duck icon or vist
+7. Continue explaining the concept to the duck until satisfied with the duck's knowledge on the topic.
+
+8. Request a Teaching Score, which evaluates how well the concept was taught based solely on the user’s explanation.
+
+9. The backend will analyze the information provided and determine a score on how well the topic was taught
+
 ```bash
 http://localhost:3000/duck
 ```
