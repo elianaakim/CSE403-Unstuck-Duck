@@ -17,6 +17,12 @@ export async function evaluateConversation(req: any) {
     // Get AI-generated score
     const score = await evaluateTeachingScore(question, userAnswer, subject);
 
+    if (score === -1) {
+      return new Response(JSON.stringify({ error: "Failed to parse score" }), {
+        status: 500,
+      });
+    }
+
     return new Response(JSON.stringify({ score }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
