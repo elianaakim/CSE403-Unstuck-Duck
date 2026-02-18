@@ -27,8 +27,10 @@ answer addresses the question and demonstrates understanding of the subject.
 
   const raw = response.message?.content?.trim() || "0";
   console.log("Raw evaluation response:", raw);
-  
-  const score = raw.match(/\d+/)?.[0] ? parseInt(raw.match(/\d+/)?.[0] || "0", 10) : NaN;
+
+  const score = raw.match(/\d+/)?.[0]
+    ? parseInt(raw.match(/\d+/)?.[0] || "0", 10)
+    : NaN;
   console.log("Parsed score:", score);
 
   if (isNaN(score)) {

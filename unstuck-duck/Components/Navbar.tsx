@@ -10,8 +10,8 @@ import { Url } from "next/dist/shared/lib/router/router";
 interface INavbarProps {}
 
 const navItems = [
-  { id: "duck",      label: "The Duck",  href: "/duck"      },
-  { id: "lake",      label: "The Lake",  href: "/lake"      },
+  { id: "duck", label: "The Duck", href: "/duck" },
+  { id: "lake", label: "The Lake", href: "/lake" },
   { id: "classroom", label: "Classroom", href: "/classroom" },
 ];
 
@@ -51,7 +51,6 @@ const Navbar: React.FunctionComponent<INavbarProps> = () => {
 
       {/* Right side: theme toggle + avatar */}
       <div className="mr-4 flex items-center gap-3">
-
         {/* Toggle */}
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
@@ -71,9 +70,10 @@ const Navbar: React.FunctionComponent<INavbarProps> = () => {
           <span
             className={`
               absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-all duration-300
-              ${isDark
-                ? "left-0.5 bg-neutral-900 border border-white/20"
-                : "left-[calc(100%-1.625rem)] bg-white border border-stone-300"
+              ${
+                isDark
+                  ? "left-0.5 bg-neutral-900 border border-white/20"
+                  : "left-[calc(100%-1.625rem)] bg-white border border-stone-300"
               }
             `}
           />
