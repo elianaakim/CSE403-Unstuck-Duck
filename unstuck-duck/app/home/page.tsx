@@ -4,199 +4,188 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+const SLIDES = [
+  {
+    id: "duck",
+    label: "Duck",
+    href: "/duck",
+    src: "/duck_l.png",
+    alt: "Duck Image",
+    tagline: "Chat with your rubber duck tutor",
+    accent: "#facc15",
+  },
+  {
+    id: "lake",
+    label: "Lake",
+    href: "/lake",
+    src: "/lake.png",
+    alt: "Lake Image",
+    tagline: "Dive into open-ended exploration",
+    accent: "#38bdf8",
+  },
+  {
+    id: "courses",
+    label: "Courses",
+    href: "/classroom",
+    src: "/courses.png",
+    alt: "Courses Image",
+    tagline: "Structured lessons, duck-approved",
+    accent: "#a78bfa",
+  },
+];
+
 export default function Home() {
-  const selections: string[] = ["Duck", "Lake", "Courses"];
   const [selected, setSelected] = useState(0);
 
-  function handleLeftClick() {
-    setSelected((prevSelected) => {
-      const length = selections.length;
-      const nextIndex = (((prevSelected - 1) % length) + length) % length;
-      return nextIndex;
-    });
+  function prev() {
+    setSelected((s) => ((s - 1) + SLIDES.length) % SLIDES.length);
   }
 
-  function handleRightClick() {
-    setSelected((prevSelected) => {
-      const length = selections.length;
-      const nextIndex = (((prevSelected + 1) % length) + length) % length;
-      return nextIndex;
-    });
+  function next() {
+    setSelected((s) => (s + 1) % SLIDES.length);
   }
 
-  const BACK_IMG_SIZE = 150;
-  const FRONT_IMG_SIZE = 300;
-
-  function showCarousel() {
-    switch (selected) {
-      case 0:
-        return (
-          <div className="flex w-full h-3/4 flex-row justify-center space-x-4">
-            <div className="">
-              <Image
-                src="/courses.png"
-                alt="Courses Image"
-                className=""
-                width={BACK_IMG_SIZE}
-                height={BACK_IMG_SIZE}
-                draggable="false"
-                onClick={handleLeftClick}
-              />
-              {renderLeftArrow()}
-            </div>
-            <div className="">
-              <Image
-                src="/lilduc.png"
-                alt="Duck Image"
-                className=""
-                width={FRONT_IMG_SIZE}
-                height={FRONT_IMG_SIZE}
-                draggable="false"
-              />
-            </div>
-            <div>
-              <Image
-                src="/lake.png"
-                alt="Lake Image"
-                className=""
-                width={BACK_IMG_SIZE}
-                height={BACK_IMG_SIZE}
-                draggable="false"
-                onClick={handleRightClick}
-              />
-              {renderRightArrow()}
-            </div>
-          </div>
-        );
-      case 1:
-        return (
-          <div className="flex w-full h-3/4 flex-row justify-center space-x-4">
-            <div>
-              <Image
-                src="/lilduc.png"
-                alt="Duck Image"
-                className=""
-                width={BACK_IMG_SIZE}
-                height={BACK_IMG_SIZE}
-                draggable="false"
-                onClick={handleLeftClick}
-              />
-              {renderLeftArrow()}
-            </div>
-            <Image
-              src="/lake.png"
-              alt="Lake Image"
-              className=""
-              width={FRONT_IMG_SIZE}
-              height={FRONT_IMG_SIZE}
-              draggable="false"
-            />
-            <div>
-              <Image
-                src="/courses.png"
-                alt="Courses Image"
-                className=""
-                width={BACK_IMG_SIZE}
-                height={BACK_IMG_SIZE}
-                draggable="false"
-                onClick={handleRightClick}
-              />
-              {renderRightArrow()}
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div className="flex w-full h-3/4 flex-row justify-center space-x-4">
-            <div>
-              <Image
-                src="/lake.png"
-                alt="Lake Image"
-                className=""
-                width={BACK_IMG_SIZE}
-                height={BACK_IMG_SIZE}
-                draggable="false"
-                onClick={handleLeftClick}
-              />
-              {renderLeftArrow()}
-            </div>
-            <Image
-              src="/courses.png"
-              alt="Courses Image"
-              className=""
-              width={FRONT_IMG_SIZE}
-              height={FRONT_IMG_SIZE}
-              draggable="false"
-            />
-            <div>
-              <Image
-                src="/lilduc.png"
-                alt="Duck Image"
-                className=""
-                width={BACK_IMG_SIZE}
-                height={BACK_IMG_SIZE}
-                draggable="false"
-                onClick={handleRightClick}
-              />
-              {renderRightArrow()}
-            </div>
-          </div>
-        );
-    }
-  }
-
-  function renderLeftArrow() {
-    return (
-      <Image
-        src="/left-circle-arrow.png"
-        alt="Left Arrow"
-        className=""
-        width={BACK_IMG_SIZE}
-        height={BACK_IMG_SIZE}
-        draggable="false"
-        onClick={handleLeftClick}
-      />
-    );
-  }
-
-  function renderRightArrow() {
-    return (
-      <Image
-        src="/right-circle-arrow.png"
-        alt="Right Arrow"
-        className=""
-        width={BACK_IMG_SIZE}
-        height={BACK_IMG_SIZE}
-        draggable="false"
-        onClick={handleRightClick}
-      />
-    );
-  }
-
-  function onPageButtonClick(): string {
-    switch (selected) {
-      case 0:
-        return "/duck";
-      case 1:
-        return "/lake";
-      default:
-        return "/classroom";
-    }
-  }
+  const current = SLIDES[selected];
+  const leftSlide = SLIDES[((selected - 1) + SLIDES.length) % SLIDES.length];
+  const rightSlide = SLIDES[(selected + 1) % SLIDES.length];
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white font-sans text-black">
-      <main className="flex min-h-screen w-full flex-col items-center justify-center bg-white sm:items-start text-black">
-        {showCarousel()}
-        <div className="flex w-full h-1/5 flex-row justify-center">
-          <Link
-            href={onPageButtonClick()}
-            className="flex flex-col w-30 h-16 bg-black text-lg text-white text-center justify-center"
+    <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-neutral-950 font-sans overflow-hidden transition-colors duration-300">
+
+      {/* ── Hero text ── */}
+      <div className="text-center pt-16 pb-8 px-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400 dark:text-neutral-500 mb-3 transition-colors duration-300">
+          Where would you like to go?
+        </p>
+        <h1
+          className="text-5xl font-bold tracking-tight leading-tight transition-colors duration-500"
+          style={{ color: current.accent }}
+        >
+          {current.label}
+        </h1>
+        <p
+          className="mt-3 text-base transition-colors duration-500"
+          style={{ color: current.accent + "99" }}
+        >
+          {current.tagline}
+        </p>
+      </div>
+
+      {/* ── Carousel ── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
+
+        {/* Track */}
+        <div className="relative flex items-center justify-center w-full max-w-3xl gap-6 mb-10">
+
+          {/* Left ghost card */}
+          <button
+            onClick={prev}
+            className="group relative flex-shrink-0 cursor-pointer bg-transparent border-none p-0"
+            aria-label={`Go to ${leftSlide.label}`}
           >
-            {selections[selected]}
-          </Link>
+            <div className="w-36 h-36 rounded-2xl bg-stone-200 dark:bg-white/5 border border-stone-300 dark:border-white/10 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:bg-stone-300 dark:group-hover:bg-white/10 group-hover:scale-105">
+              <Image
+                src={leftSlide.src}
+                alt={leftSlide.alt}
+                width={100}
+                height={100}
+                className="object-contain opacity-40 group-hover:opacity-60 transition-opacity duration-300"
+                draggable="false"
+              />
+            </div>
+            <p className="mt-2 text-center text-xs text-stone-400 dark:text-neutral-600 group-hover:text-stone-600 dark:group-hover:text-neutral-400 transition-colors">
+              {leftSlide.label}
+            </p>
+          </button>
+
+          {/* Center active card */}
+          <div className="relative flex-shrink-0">
+            <div
+              className="absolute inset-0 rounded-3xl blur-3xl opacity-20 dark:opacity-30 scale-90 transition-colors duration-500"
+              style={{ backgroundColor: current.accent }}
+            />
+            <div
+              className="relative w-64 h-64 rounded-3xl border flex items-center justify-center overflow-hidden shadow-2xl transition-all duration-500"
+              style={{
+                backgroundColor: current.accent + "18",
+                borderColor: current.accent + "55",
+              }}
+            >
+              <Image
+                src={current.src}
+                alt={current.alt}
+                width={220}
+                height={220}
+                className="object-contain drop-shadow-xl transition-all duration-500"
+                draggable="false"
+              />
+            </div>
+          </div>
+
+          {/* Right ghost card */}
+          <button
+            onClick={next}
+            className="group relative flex-shrink-0 cursor-pointer bg-transparent border-none p-0"
+            aria-label={`Go to ${rightSlide.label}`}
+          >
+            <div className="w-36 h-36 rounded-2xl bg-stone-200 dark:bg-white/5 border border-stone-300 dark:border-white/10 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:bg-stone-300 dark:group-hover:bg-white/10 group-hover:scale-105">
+              <Image
+                src={rightSlide.src}
+                alt={rightSlide.alt}
+                width={100}
+                height={100}
+                className="object-contain opacity-40 group-hover:opacity-60 transition-opacity duration-300"
+                draggable="false"
+              />
+            </div>
+            <p className="mt-2 text-center text-xs text-stone-400 dark:text-neutral-600 group-hover:text-stone-600 dark:group-hover:text-neutral-400 transition-colors">
+              {rightSlide.label}
+            </p>
+          </button>
         </div>
-      </main>
+
+        {/* Dot indicators */}
+        <div className="flex gap-2 mb-10">
+          {SLIDES.map((slide, i) => (
+            <button
+              key={slide.id}
+              onClick={() => setSelected(i)}
+              className="rounded-full transition-all duration-300 bg-transparent border-none p-0"
+              style={{
+                width: i === selected ? 28 : 8,
+                height: 8,
+                backgroundColor:
+                  i === selected ? current.accent : "rgba(128,128,128,0.3)",
+              }}
+              aria-label={`Go to ${slide.label}`}
+            />
+          ))}
+        </div>
+
+        {/* CTA button */}
+        <Link
+          href={current.href}
+          className="flex items-center gap-2 font-semibold text-neutral-950 text-sm px-8 py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
+          style={{
+            backgroundColor: current.accent,
+            boxShadow: `0 8px 32px ${current.accent}55`,
+          }}
+        >
+          Go to {current.label}
+          <span className="text-base">→</span>
+        </Link>
+      </div>
+
+      {/* ── Footer ── */}
+      <footer className="w-full border-t border-stone-200 dark:border-white/10 px-10 py-4 flex items-center justify-between transition-colors duration-300">
+        <span className="text-xs text-stone-400 dark:text-neutral-600 transition-colors duration-300">
+          © {new Date().getFullYear()} Unstuck Duck
+        </span>
+        <div className="flex gap-5">
+          <Link href="#" className="text-xs text-stone-400 dark:text-neutral-600 hover:text-stone-700 dark:hover:text-neutral-300 transition-colors">Privacy</Link>
+          <Link href="#" className="text-xs text-stone-400 dark:text-neutral-600 hover:text-stone-700 dark:hover:text-neutral-300 transition-colors">Terms</Link>
+        </div>
+      </footer>
     </div>
   );
 }

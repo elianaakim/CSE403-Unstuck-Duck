@@ -16,10 +16,10 @@ const Message = (user : {name: string; image: string; time: string; message: str
                     className="rounded-full mr-4"
                 />
                 <div>
-                    <p className="text-gray-800">
+                    <p className="text-gray-800 dark:text-gray-200">
                         {user.message}
                     </p>
-                    <span className="text-sm text-gray-500">{user.name} • {user.time}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{user.name} • {user.time}</span>
                 </div>
             </div>
         </div>
