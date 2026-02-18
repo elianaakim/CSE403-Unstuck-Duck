@@ -21,7 +21,7 @@ answer addresses the question and demonstrates understanding of the subject.
 `;
 
   const response = await ollama.chat({
-    model: "tinyllama",
+    model: "llama3.2",
     messages: [{ role: "user", content: prompt }],
   });
 
