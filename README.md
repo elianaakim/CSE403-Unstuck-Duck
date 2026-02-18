@@ -33,11 +33,18 @@ cd CSE403-Unstuck-Duck/unstuck-duck
 npm install
 ```
 
+Install Ollama to locally run
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2
+```
+
 # Running the Application
 Start the application:
 
+Make sure to run all npm commands from `/unstuck-duck/`!
 ```bash
-cd unstuck-duck
 npm run dev
 ```
 
