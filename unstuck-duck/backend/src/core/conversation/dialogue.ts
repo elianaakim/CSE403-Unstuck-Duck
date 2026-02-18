@@ -7,7 +7,7 @@ import { ollamaClient } from "../../routes/ollama";
 export async function generateFirstQuestion(subject: string): Promise<string> {
   try {
     const response = await ollamaClient.chat({
-      model: "gpt-oss",
+      model: "tinyllama",
       messages: [
         {
           role: "system",
@@ -63,8 +63,8 @@ export async function generateFollowUpQuestion(
     ];
 
     const response = await ollamaClient.chat({
-      model: "gpt-oss",
-      messages: messages as Array<{ role: string; content: string }>,
+      model: "tinyllama",
+      messages: messages as any,
       options: {
         num_predict: 150,
         temperature: 0.8,
