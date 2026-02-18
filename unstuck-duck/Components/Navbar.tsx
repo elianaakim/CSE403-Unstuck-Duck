@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Url } from "next/dist/shared/lib/router/router";
 
-interface INavbarProps {}
 
 const navItems = [
   { id: "duck", label: "The Duck", href: "/duck" },
