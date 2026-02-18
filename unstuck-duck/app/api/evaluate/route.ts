@@ -57,10 +57,27 @@ export async function POST(req: NextRequest) {
     session.lastEvaluatedAt = new Date();
     session.evaluationCount++;
 
+    let feedback = "";
+    if (session.teachingScore >= 90) {
+      feedback = "Outstanding teaching! I feel very prepared for the exam.";
+    } else if (session.teachingScore >= 80) {
+      feedback = "Great teaching! I have a strong understanding.";
+    } else if (session.teachingScore >= 70) {
+      feedback = "Good teaching. I'm getting the main concepts.";
+    } else if (session.teachingScore >= 60) {
+      feedback = "Fair teaching. I understand the basics.";
+    } else if (session.teachingScore >= 50) {
+      feedback = "Okay teaching. I need more clarity on some points.";
+    } else {
+      feedback = "Keep teaching! I need more explanation to understand.";
+    }
+
     return NextResponse.json({
       sessionId,
       teachingScore: session.teachingScore,
       lastQuestion,
+      feedback,
+      message: `Based on your teaching, I think I'd score around a ${session.teachingScore}/100 on an exam. ${feedback}`,
       evaluationCount: session.evaluationCount,
       timestamp: session.lastEvaluatedAt,
     });

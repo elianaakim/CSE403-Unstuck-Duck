@@ -54,12 +54,12 @@ export default function Duck() {
   }
 
   // ── 1. Start session ──
-  async function handleStartSession(e: React.FormEvent) {
+  async function handleStartSession(e: React.SubmitEvent) {
     e.preventDefault();
     if (!topicInput.trim()) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/duck/sessions/start`, {
+      const res = await fetch(`/api/sessions/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: topicInput.trim() }),
@@ -80,7 +80,7 @@ export default function Duck() {
   }
 
   // ── 2. Send a message ──
-  async function handleSend(e?: React.FormEvent) {
+  async function handleSend(e?: React.SubmitEvent) {
     e?.preventDefault();
     if (!chat.trim() || !sessionId || status !== "active" || isLoading) return;
     const userText = chat.trim();
@@ -88,7 +88,7 @@ export default function Duck() {
     addMessage("user", userText);
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/duck/ask`, {
+      const res = await fetch(`/api/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId, userResponse: userText }),
@@ -110,7 +110,7 @@ export default function Duck() {
     if (!sessionId || isEvaluating) return;
     setIsEvaluating(true);
     try {
-      const res = await fetch(`${API_BASE}/api/duck/evaluate`, {
+      const res = await fetch(`/api/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),
@@ -133,7 +133,7 @@ export default function Duck() {
     if (!sessionId) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/duck/sessions/end`, {
+      const res = await fetch(`/api/sessions/end`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),
