@@ -68,7 +68,7 @@ v0.1.0-beta
 
 To check out the exact commit set for this release:
 ```bash
-git checkout v0.2.0-beta
+git checkout v0.1.0-beta
 ```
 
 # Running Tests
