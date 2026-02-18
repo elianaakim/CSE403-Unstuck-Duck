@@ -16,9 +16,9 @@
 **Questions for the Product Owner**: What would you prefer to see for gamma release, a more refined teaching experience, or more features like the Zoom and user authentication?
 
 **Goals for Next Week**: 
-* Improve prompt quality and scoring accuracy - 2 days - Eli and Ava
-* Finish Zoom integration - 4 days - Eli and Ava
-* Finish User athentication - 4 days - Iris
+* Improve prompt quality and scoring accuracy(switching to Gemini) - 3 days - Eli, Ava, Iris
+* Finish Zoom integration - 3 days - Eli
+* Finish User athentication - 5 days - Iris, Ava
 * Finish Speech-to-text - 4 days - Mia
 * More graphics - one week - Mia
 * Improve accesability - 3 days - Wesley and Yang
