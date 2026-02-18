@@ -17,7 +17,6 @@ export interface Session {
 }
 
 // In-memory store for sessions
-// Note: In production, you'd want to use a database or Redis
 const sessions = new Map<string, Session>();
 
 export function getSessionsStore() {
