@@ -52,6 +52,17 @@ For backend (ollama):
 ```bash
 http://localhost:11434
 ```
+# Beta Release Tag
+
+The GitHub tag for this milestone is:
+```bash
+v0.2.0-beta
+```
+
+To check out the exact commit set for this release:
+```bash
+git checkout v0.2.0-beta
+```
 
 # Running Tests
 
@@ -63,3 +74,13 @@ Make sure to run all npm commands from `/unstuck-duck/`!
 ```bash
 npm test
 ```
+# Operational Use Case: Teaching the Duck a Concept
+Our core use case is fully functional:
+
+1. The user explains a concept to the duck through the frontend interface.
+
+2. The backend (via Ollama) analyzes the explanation.
+
+3. The duck responds with clarifying questions.
+
+4. The user can request a Teaching Score, which evaluates how well the concept was taught based solely on the user’s explanation.
