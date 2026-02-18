@@ -53,6 +53,7 @@ router.post("/sessions/start", async (req, res) => {
 
 // Generate duck's next question
 router.post("/ask", async (req, res) => {
+  console.log("Received /ask request with body:", req.body);
   try {
     const { sessionId, userResponse } = req.body;
 

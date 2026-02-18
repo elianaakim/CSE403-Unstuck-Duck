@@ -39,7 +39,6 @@
     "start": "next start",
     "lint": "eslint",
     "test": "mocha --require ts-node/register --extensions ts \"backend/src/tests/**/*.ts\"",
-    "backend": "ts-node backend/src/index.ts",
-    "dev:backend": "ts-node --watch backend/src/index.ts"
+    "backend": "ts-node backend/src/index.ts"
   }
 }
