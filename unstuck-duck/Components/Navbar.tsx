@@ -35,10 +35,11 @@ const Navbar = () => {
           <li key={item.id}>
             <Link
               href={item.href}
-              className={
-                `${isActive(item.href) ? "text-spotify-green" : ""}` +
-                " hover:text-gray-600"
-              }
+              className={`${
+                isActive(item.href)
+                  ? "!text-spotify-green visited:!text-spotify-green"
+                  : "!text-slate-900 visited:!text-slate-900"
+              } !no-underline hover:!text-gray-600`}
             >
               {item.label}
             </Link>

@@ -52,9 +52,14 @@ router.post("/signature", (req: Request, res: Response) => {
     return res.status(400).json({ error: "meetingNumber is required" });
   }
 
-  const sdkKey = process.env.ZOOM_MEETING_SDK_KEY || process.env.ZOOM_API_KEY;
+  const sdkKey =
+    process.env.ZOOM_MEETING_SDK_KEY ||
+    process.env.ZOOM_SDK_KEY ||
+    process.env.ZOOM_API_KEY;
   const sdkSecret =
-    process.env.ZOOM_MEETING_SDK_SECRET || process.env.SECRET_TOKEN;
+    process.env.ZOOM_MEETING_SDK_SECRET ||
+    process.env.ZOOM_CLIENT_SECRET ||
+    process.env.SECRET_TOKEN;
 
   if (!sdkKey || !sdkSecret) {
     return res.status(500).json({

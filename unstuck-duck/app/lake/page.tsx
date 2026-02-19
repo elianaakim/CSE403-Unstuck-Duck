@@ -4,8 +4,8 @@ import { useCallback, useState } from "react";
 import "@zoom/meetingsdk/dist/css/bootstrap.css";
 import "@zoom/meetingsdk/dist/css/react-select.css";
 
-const BACKEND_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+const ZOOM_SIGNATURE_ENDPOINT =
+  process.env.NEXT_PUBLIC_ZOOM_SIGNATURE_URL || "/api/zoom";
 
 export default function Lake() {
   const [meetingNumber, setMeetingNumber] = useState("");
@@ -25,14 +25,16 @@ export default function Lake() {
     setStatus("joining");
 
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/api/zoom/signature`, {
+      const response = await fetch(ZOOM_SIGNATURE_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ meetingNumber, role: 0 }),
       });
 
       if (!response.ok) {
-        const payload = (await response.json()) as { error?: string };
+        const payload = (await response.json().catch(() => ({}))) as {
+          error?: string;
+        };
         throw new Error(payload.error || "Failed to fetch Zoom signature");
       }
 
