@@ -2,12 +2,11 @@ import ollama from "ollama";
 
 export const ollamaClient = ollama;
 
-// This function actually evaluates the student's answer
 export async function evaluateTeachingScore(
   question: string,
   userAnswer: string,
   subject: string
-) {
+): Promise<number> {
   const prompt = `
 You are a strict evaluator. Score the student's answer from 1 to 100.
 
