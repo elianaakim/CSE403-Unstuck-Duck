@@ -1,4 +1,19 @@
-import { ollamaClient } from "../../routes/ollama";
+import { ollamaClient } from "../../app/lib/ollama";
+
+
+
+function extractAnswer(content: string): string {
+  // Remove thinking tags if present
+  const withoutThink = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  
+  // If we got something after removing think tags, use it
+  if (withoutThink) {
+    return withoutThink;
+  }
+  
+  // Otherwise return original (for models that don't use think tags)
+  return content.trim();
+}
 
 /**
  * Generates the first question to start the conversation
@@ -7,7 +22,7 @@ import { ollamaClient } from "../../routes/ollama";
 export async function generateFirstQuestion(subject: string): Promise<string> {
   try {
     const response = await ollamaClient.chat({
-      model: "gpt-oss",
+      model: "llama3.2",
       messages: [
         {
           role: "system",
@@ -63,7 +78,7 @@ export async function generateFollowUpQuestion(
     ];
 
     const response = await ollamaClient.chat({
-      model: "gpt-oss",
+      model: "llama3.2",
       messages: messages as Array<{ role: string; content: string }>,
       options: {
         num_predict: 150,
@@ -71,9 +86,13 @@ export async function generateFollowUpQuestion(
       },
     });
 
-    return (
-      response.message.content || "That's interesting! Can you tell me more?"
-    );
+    const rawContent = response.message.content || "";
+    console.log("Raw LLM response:", rawContent);
+    
+    const cleanedAnswer = extractAnswer(rawContent);
+    console.log("Cleaned answer:", cleanedAnswer);
+    
+    return cleanedAnswer || "That's interesting! Can you tell me more?";
   } catch (error) {
     console.error("Error generating follow-up question:", error);
     return "That's interesting! Can you tell me more?";

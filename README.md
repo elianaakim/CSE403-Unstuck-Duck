@@ -29,16 +29,23 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/elianaakim/CSE403-Unstuck-Duck.git
-cd CSE403-Unstuck-Duck
-cd unstuck-duck
+cd CSE403-Unstuck-Duck/unstuck-duck
 npm install
+```
+
+Install Ollama to run locally:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2
 ```
 
 # Running the Application
 Start the application:
 
+Make sure to run all npm commands from `/unstuck-duck/`!
 ```bash
-cd unstuck-duck && npm run dev
+npm run dev
 ```
 
 The application will run locally at:
@@ -52,6 +59,17 @@ For backend (ollama):
 ```bash
 http://localhost:11434
 ```
+# Beta Release Tag
+
+The GitHub tag for this milestone is:
+```bash
+v0.1.0-beta
+```
+
+To check out the exact commit set for this release:
+```bash
+git checkout v0.1.0-beta
+```
 
 # Running Tests
 
@@ -59,30 +77,32 @@ This project uses Mocha, Chai, and Supertest for testing.
 
 Run all tests with:
 
+Make sure to run all npm commands from `/unstuck-duck/`!
 ```bash
 npm test
 ```
+# Operational Use Case: Teaching the Duck a Concept
+Our core use case is fully functional:
 
-# Beta Release Tag
+1. Input username `a@a.com` and password `1234` into login form
+  
+2. Press the "Sign In" button
+     - Chrome might warn you about an insecure password; feel free to ignore
+  
+3. Once on the home page, make sure the carousel is selected on "Duck" and press "Go To Duck"
 
-The GitHub tag for this beta release is:
+4. Enter a topic of choice (ex. Bubbles)
+
+5. Explain the concept of choice to the duck through the frontend interface (ex. Bubbles can pop)
+
+6. The backend (via Ollama) analyzes the explanation and responds with follow-up questions.
+
+7. Continue explaining the concept to the duck until satisfied with the duck's knowledge on the topic.
+
+8. Request a Teaching Score, which evaluates how well the concept was taught based solely on the user’s explanation.
+
+9. The backend will analyze the information provided and determine a score on how well the topic was taught
 
 ```bash
-beta-release
+http://localhost:3000/duck
 ```
-
-To check out this release: 
-
-```bash
-git checkout beta-release
-```
-
-Creating the tag
-If you need to recreate the tag:
-
-```bash
-git tag beta-release
-git push origin beta-release
-```
-
-This tag identifies the commits that comprise the beta release of the software, as required by the project rubric

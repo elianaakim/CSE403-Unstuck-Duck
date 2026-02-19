@@ -43,7 +43,7 @@ export default function Lake() {
 
       const { ZoomMtg } = await import("@zoom/meetingsdk");
 
-      ZoomMtg.setZoomJSLib("https://source.zoom.us/3.1.6/lib", "/av");
+      ZoomMtg.setZoomJSLib("https://source.zoom.us/3.13.2/lib", "/av");
       ZoomMtg.preLoadWasm();
       ZoomMtg.prepareWebSDK();
 

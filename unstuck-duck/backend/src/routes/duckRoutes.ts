@@ -2,68 +2,51 @@ import { Router, Request, Response } from "express";
 import {
   generateFirstQuestion,
   generateFollowUpQuestion,
-} from "../core/conversation/dialogue";
-import { evaluateConversation } from "../core/conversation/evaluation";
-
-interface ConversationMessage {
-  role: "system" | "assistant" | "user";
-  content: string;
-}
-
-interface Session {
-  sessionId: string;
-  topic: string;
-  startTime: Date;
-  conversationHistory: ConversationMessage[];
-  status: "active" | "completed";
-  teachingScore: number;
-  lastEvaluatedAt: Date | null;
-  evaluationCount: number;
-  endTime?: Date;
-  duration?: number;
-}
+} from "../../../core/conversation/dialogue";
+import { evaluateConversation } from "../../../core/conversation/evaluation";
+import { getSessionsStore } from "../../../app/lib/sessionsStore";
 
 const router = Router();
-const sessions = new Map<string, Session>();
 
-// -------------------- START SESSION --------------------
 router.post("/sessions/start", async (req: Request, res: Response) => {
   try {
-    const { topic } = req.body;
+    const { topic } = req.body as { topic?: string };
 
     if (!topic || typeof topic !== "string" || topic.trim().length === 0) {
       return res.status(400).json({ error: "Valid topic is required" });
     }
 
-    const sessionId = `session_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(2, 9)}`;
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const normalizedTopic = topic.trim();
+    const firstQuestion = await generateFirstQuestion(normalizedTopic);
 
-    const firstQuestion = await generateFirstQuestion(topic);
-
-    const session: Session = {
+    const session = {
       sessionId,
-      topic: topic.trim(),
+      topic: normalizedTopic,
       startTime: new Date(),
       conversationHistory: [
-        { role: "system", content: `Learning about ${topic}` },
-        { role: "assistant", content: firstQuestion },
+        {
+          role: "system" as const,
+          content: `Learning about ${normalizedTopic}`,
+        },
+        { role: "assistant" as const, content: firstQuestion },
       ],
-      status: "active",
+      status: "active" as const,
       teachingScore: 0,
       lastEvaluatedAt: null,
       evaluationCount: 0,
     };
 
+    const sessions = getSessionsStore();
     sessions.set(sessionId, session);
 
     return res.json({
       sessionId,
       duckQuestion: firstQuestion,
-      topic: session.topic,
+      topic: normalizedTopic,
       startTime: session.startTime,
       teachingScore: 0,
-      message: `Started teaching session on "${topic}"`,
+      message: `Started teaching session on "${normalizedTopic}"`,
     });
   } catch (error) {
     console.error("Error starting session:", error);
@@ -71,21 +54,29 @@ router.post("/sessions/start", async (req: Request, res: Response) => {
   }
 });
 
-// -------------------- ASK QUESTION --------------------
 router.post("/ask", async (req: Request, res: Response) => {
   try {
-    const { sessionId, userResponse } = req.body;
+    const { sessionId, userResponse } = req.body as {
+      sessionId?: string;
+      userResponse?: string;
+    };
 
     if (!sessionId || typeof userResponse !== "string") {
-      return res.status(400).json({
-        error: "sessionId and userResponse (string) are required",
-      });
+      return res
+        .status(400)
+        .json({ error: "sessionId and userResponse (string) are required" });
     }
 
+    const sessions = getSessionsStore();
     const session = sessions.get(sessionId);
-    if (!session) return res.status(404).json({ error: "Session not found" });
-    if (session.status !== "active")
+
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    if (session.status !== "active") {
       return res.status(400).json({ error: "Session is not active" });
+    }
 
     session.conversationHistory.push({
       role: "user",
@@ -115,26 +106,31 @@ router.post("/ask", async (req: Request, res: Response) => {
   }
 });
 
-// -------------------- EVALUATE --------------------
 router.post("/evaluate", async (req: Request, res: Response) => {
   try {
-    const { sessionId } = req.body;
+    const { sessionId } = req.body as { sessionId?: string };
 
     if (!sessionId) {
       return res.status(400).json({ error: "sessionId is required" });
     }
 
+    const sessions = getSessionsStore();
     const session = sessions.get(sessionId);
-    if (!session) return res.status(404).json({ error: "Session not found" });
-    if (session.status !== "active")
+
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    if (session.status !== "active") {
       return res.status(400).json({ error: "Session is not active" });
+    }
 
     const conversation = session.conversationHistory;
 
     const lastUserIndex = [...conversation]
-      .map((m, i) => ({ m, i }))
+      .map((m, index) => ({ m, index }))
       .reverse()
-      .find((x) => x.m.role === "user")?.i;
+      .find((x) => x.m.role === "user")?.index;
 
     if (lastUserIndex === undefined || lastUserIndex <= 0) {
       return res.status(400).json({
@@ -153,12 +149,29 @@ router.post("/evaluate", async (req: Request, res: Response) => {
 
     session.teachingScore = evaluation.score;
     session.lastEvaluatedAt = new Date();
-    session.evaluationCount++;
+    session.evaluationCount += 1;
+
+    let feedback = "";
+    if (session.teachingScore >= 90) {
+      feedback = "Outstanding teaching! I feel very prepared for the exam.";
+    } else if (session.teachingScore >= 80) {
+      feedback = "Great teaching! I have a strong understanding.";
+    } else if (session.teachingScore >= 70) {
+      feedback = "Good teaching. I'm getting the main concepts.";
+    } else if (session.teachingScore >= 60) {
+      feedback = "Fair teaching. I understand the basics.";
+    } else if (session.teachingScore >= 50) {
+      feedback = "Okay teaching. I need more clarity on some points.";
+    } else {
+      feedback = "Keep teaching! I need more explanation to understand.";
+    }
 
     return res.json({
       sessionId,
       teachingScore: session.teachingScore,
       lastQuestion,
+      feedback,
+      message: `Based on your teaching, I think I'd score around a ${session.teachingScore}/100 on an exam. ${feedback}`,
       evaluationCount: session.evaluationCount,
       timestamp: session.lastEvaluatedAt,
     });
@@ -168,17 +181,20 @@ router.post("/evaluate", async (req: Request, res: Response) => {
   }
 });
 
-// -------------------- END SESSION --------------------
-router.post("/sessions/end", async (req: Request, res: Response) => {
+router.post("/sessions/end", (req: Request, res: Response) => {
   try {
-    const { sessionId } = req.body;
+    const { sessionId } = req.body as { sessionId?: string };
 
     if (!sessionId) {
       return res.status(400).json({ error: "sessionId is required" });
     }
 
+    const sessions = getSessionsStore();
     const session = sessions.get(sessionId);
-    if (!session) return res.status(404).json({ error: "Session not found" });
+
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
 
     session.endTime = new Date();
     session.status = "completed";
@@ -199,12 +215,19 @@ router.post("/sessions/end", async (req: Request, res: Response) => {
   }
 });
 
-// -------------------- GET SESSION --------------------
 router.get("/sessions/:sessionId", (req: Request, res: Response) => {
   try {
-    const { sessionId } = req.params;
-    const id = Array.isArray(sessionId) ? sessionId[0] : sessionId;
-    const session = sessions.get(id);
+    const rawSessionId = req.params.sessionId;
+    const sessionId = Array.isArray(rawSessionId)
+      ? rawSessionId[0]
+      : rawSessionId;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: "sessionId is required" });
+    }
+
+    const sessions = getSessionsStore();
+    const session = sessions.get(sessionId);
 
     if (!session) {
       return res.status(404).json({ error: "Session not found" });
