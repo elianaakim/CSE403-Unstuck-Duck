@@ -18,7 +18,7 @@
 **Goals for Next Week**: 
 * Improve prompt quality and scoring accuracy(switching to Gemini) - 3 days - Eli, Ava, Iris
 * Finish Zoom integration - 3 days - Eli
-* Finish User authentification (supabase) - 5 days - Iris, Ava
+* Finish User authentication (supabase) - 5 days - Iris, Ava
 * Finish Speech-to-text - 4 days - Mia
 * More graphics - one week - Mia
 * Improve accessibility - 3 days - Wesley and Yang
