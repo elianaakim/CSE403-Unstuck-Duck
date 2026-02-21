@@ -3,8 +3,9 @@
 import { useCallback, useState } from "react";
 
 const ZOOM_SIGNATURE_ENDPOINT =
-  process.env.NEXT_PUBLIC_ZOOM_SIGNATURE_URL || "/api/zoom";
+  process.env.NEXT_PUBLIC_ZOOM_SIGNATURE_URL || "/api/zoom/signature";
 const ZOOM_CREATE_MEETING_ENDPOINT = "/api/zoom";
+const ZOOM_ROOM_ENDPOINT = "/api/zoom/room";
 
 const PLACEHOLDER_TOPICS = [
   {
@@ -140,13 +141,13 @@ export default function Lake() {
     }
   }, []);
 
-  // --- JOIN a placeholder topic (creates a meeting for that topic) ---
+  // --- JOIN a topic room (get existing or create new) ---
   const joinTopic = useCallback(async (topicTitle: string) => {
     setError(null);
     setStatus("creating");
 
     try {
-      const response = await fetch(ZOOM_CREATE_MEETING_ENDPOINT, {
+      const response = await fetch(ZOOM_ROOM_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: topicTitle }),
