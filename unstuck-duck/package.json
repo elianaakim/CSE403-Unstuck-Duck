@@ -23,6 +23,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "next": "16.1.6",

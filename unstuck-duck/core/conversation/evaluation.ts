@@ -1,4 +1,4 @@
-import { evaluateTeachingScore } from "../../app/lib/ollama";
+import { evaluateTeachingScore } from "../../app/lib/gemini";
 
 export interface EvaluationInput {
   question: string;
