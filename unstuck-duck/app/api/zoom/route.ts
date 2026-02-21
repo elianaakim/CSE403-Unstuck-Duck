@@ -1,88 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import axios from "axios";
 
-function base64UrlEncode(input: string | Buffer): string {
-  return Buffer.from(input)
-    .toString("base64")
-    .replace(/=+$/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
-}
-
-function generateMeetingSdkSignature(
-  sdkKey: string,
-  sdkSecret: string,
-  meetingNumber: string,
-  role: number
-): string {
-  const issuedAt = Math.floor(Date.now() / 1000) - 30;
-  const expiresAt = issuedAt + 60 * 60 * 2;
-
-  const header = { alg: "HS256", typ: "JWT" };
-  const payload = {
-    sdkKey,
-    appKey: sdkKey,
-    mn: meetingNumber,
-    role,
-    iat: issuedAt,
-    exp: expiresAt,
-    tokenExp: expiresAt,
-  };
-
-  const encodedHeader = base64UrlEncode(JSON.stringify(header));
-  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-  const data = `${encodedHeader}.${encodedPayload}`;
-
-  const signature = base64UrlEncode(
-    crypto.createHmac("sha256", sdkSecret).update(data).digest()
-  );
-
-  return `${data}.${signature}`;
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { meetingNumber, role } = (await req.json()) as {
-      meetingNumber?: string | number;
-      role?: number;
-    };
-
-    if (!meetingNumber) {
-      return NextResponse.json(
-        { error: "meetingNumber is required" },
-        { status: 400 }
-      );
+    // Read optional topic from request body
+    let topic = "Scheduled Meeting";
+    try {
+      const body = (await request.json()) as { topic?: string };
+      if (body?.topic) topic = body.topic;
+    } catch {
+      // no body or invalid JSON – use default topic
     }
 
-    const sdkKey =
-      process.env.ZOOM_MEETING_SDK_KEY ||
-      process.env.ZOOM_SDK_KEY ||
-      process.env.ZOOM_API_KEY;
-
-    const sdkSecret =
-      process.env.ZOOM_MEETING_SDK_SECRET ||
-      process.env.ZOOM_CLIENT_SECRET ||
-      process.env.SECRET_TOKEN;
-
-    if (!sdkKey || !sdkSecret) {
-      return NextResponse.json(
-        { error: "Zoom Meeting SDK credentials are not configured" },
-        { status: 500 }
-      );
-    }
-
-    const signature = generateMeetingSdkSignature(
-      sdkKey,
-      sdkSecret,
-      String(meetingNumber).trim(),
-      role === 1 ? 1 : 0
+    // Get access token
+    const tokenResponse = await axios.post(
+      "https://zoom.us/oauth/token",
+      new URLSearchParams({
+        grant_type: "account_credentials",
+        account_id: String(process.env.ZOOM_ACCOUNT_ID ?? ""),
+      }),
+      {
+        headers: {
+          Authorization: `Basic ${Buffer.from(
+            `${String(process.env.ZOOM_CLIENT_ID ?? "")}:${String(
+              process.env.ZOOM_CLIENT_SECRET ?? ""
+            )}`
+          ).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
     );
 
-    return NextResponse.json({ signature, sdkKey });
-  } catch {
+    console.log("Token Response:", tokenResponse.data);
+
+    const accessToken = tokenResponse.data.access_token;
+
+    // Create Zoom meeting
+    const zoomResponse = await axios.post(
+      "https://api.zoom.us/v2/users/me/meetings",
+      {
+        topic,
+        type: 2,
+        start_time: new Date().toISOString(),
+        duration: 30,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        settings: {
+          host_video: true,
+          participant_video: true,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("Zoom Response:", zoomResponse.data);
+
+    return NextResponse.json({
+      join_url: zoomResponse.data.join_url,
+      meeting_id: zoomResponse.data.id,
+      password: zoomResponse.data.password,
+    });
+  } catch (error: unknown) {
+    const err = error as {
+      response?: { data?: unknown };
+      message?: string;
+    };
+
+    console.error("Zoom API Error:", err.response?.data || err.message);
+
     return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
+      {
+        error: "Failed to create Zoom meeting",
+        details: err.message ?? "Unknown error",
+      },
+      { status: 500 }
     );
   }
 }

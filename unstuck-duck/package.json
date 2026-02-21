@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@zoom/meetingsdk": "^3.13.2",
+    "axois": "^0.0.1-security",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
