@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
+import Recorder from "@/Components/Recorder";
+
+
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -59,6 +62,11 @@ export default function Duck() {
       },
     ]);
   }
+
+  function handleTranscription(text: string) {
+    setChat(text);
+  }
+
 
   // ── 1. Start session ──
   async function handleStartSession(e: React.SubmitEvent) {
@@ -213,20 +221,7 @@ export default function Duck() {
 
           {status === "active" && (
             <div className="flex flex-col gap-3 w-full">
-              <button
-                type="button"
-                onClick={() => handleSend()}
-                disabled={isLoading || !chat.trim()}
-                className="flex items-center justify-center rounded-full border-4 mx-auto transition-all duration-200 hover:scale-105 hover:opacity-80 active:scale-95 disabled:opacity-40 border-stone-300 dark:border-white/20 bg-white dark:bg-white/5"
-              >
-                <Image
-                  src="/mic.png"
-                  alt="Send"
-                  width={80}
-                  height={80}
-                  className="rounded-full"
-                />
-              </button>
+              <Recorder onTranscription={handleTranscription} />
 
               <button
                 type="button"
