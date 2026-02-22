@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
       password: password ?? "",
       createdAt: Date.now(),
     });
+    console.log("Created Zoom meeting:", { topic, meetingId, join_url, password });
 
     return NextResponse.json({
       join_url,

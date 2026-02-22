@@ -3,6 +3,7 @@
 import { useState, SubmitEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -75,7 +76,13 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="text-6xl mb-3 inline-block" style={{ animation: 'duckBounce 2s ease-in-out infinite' }}>
-              🦆
+              <Image
+                  src="/duck.png"
+                  alt="Unstuck Duck Logo"
+                  width={50}
+                  height={50}
+                  draggable="false"
+                />
             </div>
             <h1 className="text-3xl font-bold text-white tracking-tight mb-1">
               {isSignUp ? 'Create an account' : 'Welcome back'}

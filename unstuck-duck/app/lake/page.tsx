@@ -171,36 +171,37 @@ export default function Lake() {
   const joinTopic = useCallback(async (topicTitle: string) => {
     setError(null);
     setStatus("creating");
-
+  
     try {
       const response = await fetch(ZOOM_ROOM_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: topicTitle }),
       });
-
+  
       if (!response.ok) {
         const payload = (await response.json().catch(() => ({}))) as {
           error?: string;
           details?: string;
         };
         throw new Error(
-          payload.error || payload.details || "Failed to create Zoom meeting"
+          payload.error || payload.details || "Failed to get Zoom meeting"
         );
       }
-
-      const { join_url, meeting_id } = (await response.json()) as {
+  
+      const { join_url, meeting_id, password } = (await response.json()) as {
         join_url: string;
         meeting_id: string;
+        password: string;
       };
-
+  
       if (join_url) {
-        setCreatedMeetingId(meeting_id);
+        // Use the direct join URL - Zoom handles joining existing meetings
         window.open(join_url, "_blank");
       } else {
         throw new Error("No join_url received from the server.");
       }
-
+  
       setStatus("idle");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";
