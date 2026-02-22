@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const ZOOM_SIGNATURE_ENDPOINT =
   process.env.NEXT_PUBLIC_ZOOM_SIGNATURE_URL || "/api/zoom/signature";
@@ -35,7 +35,50 @@ export default function Lake() {
   const [error, setError] = useState<string | null>(null);
   const [createdMeetingId, setCreatedMeetingId] = useState<string | null>(null);
 
-  // --- JOIN an existing meeting ---
+  // ── Iframe-based Zoom join ──
+  const [showZoomFrame, setShowZoomFrame] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const pendingCredentials = useRef<Record<string, string> | null>(null);
+
+  // Listen for status messages coming back from the Zoom iframe
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      if (event.data?.type !== "zoom-status") return;
+
+      switch (event.data.status) {
+        case "ready":
+          // Iframe scripts loaded → send the credentials we stored earlier
+          if (pendingCredentials.current && iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage(
+              pendingCredentials.current,
+              "*"
+            );
+            pendingCredentials.current = null;
+          }
+          break;
+        case "joined":
+          setStatus("joined");
+          break;
+        case "error":
+          setError(event.data.message || "Zoom meeting error");
+          setStatus("idle");
+          setShowZoomFrame(false);
+          break;
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  /** Close the Zoom iframe overlay. */
+  const closeZoomFrame = useCallback(() => {
+    setShowZoomFrame(false);
+    setStatus("idle");
+    pendingCredentials.current = null;
+  }, []);
+
+  // --- JOIN an existing meeting (via isolated iframe) ---
   const joinMeeting = useCallback(async () => {
     setError(null);
 
@@ -65,34 +108,17 @@ export default function Lake() {
         sdkKey: string;
       };
 
-      const { ZoomMtg } = await import("@zoom/meetingsdk");
+      // Store credentials; the iframe will request them on "ready"
+      pendingCredentials.current = {
+        type: "join-meeting",
+        signature,
+        sdkKey,
+        meetingNumber,
+        userName,
+        passWord: passcode,
+      };
 
-      ZoomMtg.setZoomJSLib("https://source.zoom.us/3.13.2/lib", "/av");
-      ZoomMtg.preLoadWasm();
-      ZoomMtg.prepareWebSDK();
-
-      ZoomMtg.init({
-        leaveUrl: window.location.href,
-        disablePreview: true,
-        success: () => {
-          ZoomMtg.join({
-            signature,
-            sdkKey,
-            meetingNumber,
-            userName,
-            passWord: passcode,
-            success: () => setStatus("joined"),
-            error: (joinError: { message?: string }) => {
-              setError(joinError?.message || "Failed to join meeting");
-              setStatus("idle");
-            },
-          });
-        },
-        error: (initError: { message?: string }) => {
-          setError(initError?.message || "Failed to initialize Zoom");
-          setStatus("idle");
-        },
-      });
+      setShowZoomFrame(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";
       setError(message);
@@ -290,7 +316,29 @@ export default function Lake() {
           </div>
         </section>
       </main>
-      <div id="zmmtg-root" />
+
+      {/* ── Zoom iframe overlay ── */}
+      {showZoomFrame && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white">
+          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
+            <span className="text-sm font-semibold text-black">
+              Zoom Meeting
+            </span>
+            <button
+              className="rounded-md border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50"
+              onClick={closeZoomFrame}
+            >
+              Leave
+            </button>
+          </div>
+          <iframe
+            ref={iframeRef}
+            src="/zoom-frame.html"
+            className="flex-1 w-full border-0"
+            allow="camera; microphone; display-capture; autoplay; fullscreen"
+          />
+        </div>
+      )}
     </div>
   );
 }
