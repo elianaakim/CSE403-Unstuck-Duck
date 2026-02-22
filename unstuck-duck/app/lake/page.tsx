@@ -29,25 +29,20 @@ export default function Lake() {
   const [meetingNumber, setMeetingNumber] = useState("");
   const [passcode, setPasscode] = useState("");
   const [userName, setUserName] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "joining" | "joined" | "creating"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "joining" | "joined" | "creating">("idle");
   const [error, setError] = useState<string | null>(null);
   const [createdMeetingId, setCreatedMeetingId] = useState<string | null>(null);
 
-  // ── Iframe-based Zoom join ──
   const [showZoomFrame, setShowZoomFrame] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const pendingCredentials = useRef<Record<string, string> | null>(null);
 
-  // Listen for status messages coming back from the Zoom iframe
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
       if (event.data?.type !== "zoom-status") return;
 
       switch (event.data.status) {
         case "ready":
-          // Iframe scripts loaded → send the credentials we stored earlier
           if (pendingCredentials.current && iframeRef.current?.contentWindow) {
             iframeRef.current.contentWindow.postMessage(
               pendingCredentials.current,
@@ -71,14 +66,12 @@ export default function Lake() {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  /** Close the Zoom iframe overlay. */
   const closeZoomFrame = useCallback(() => {
     setShowZoomFrame(false);
     setStatus("idle");
     pendingCredentials.current = null;
   }, []);
 
-  // --- JOIN an existing meeting (via isolated iframe) ---
   const joinMeeting = useCallback(async () => {
     setError(null);
 
@@ -108,7 +101,6 @@ export default function Lake() {
         sdkKey: string;
       };
 
-      // Store credentials; the iframe will request them on "ready"
       pendingCredentials.current = {
         type: "join-meeting",
         signature,
@@ -126,7 +118,6 @@ export default function Lake() {
     }
   }, [meetingNumber, passcode, userName]);
 
-  // --- CREATE a new Zoom meeting ---
   const createMeeting = useCallback(async () => {
     setError(null);
     setStatus("creating");
@@ -167,41 +158,39 @@ export default function Lake() {
     }
   }, []);
 
-  // --- JOIN a topic room (get existing or create new) ---
   const joinTopic = useCallback(async (topicTitle: string) => {
     setError(null);
     setStatus("creating");
-  
+
     try {
       const response = await fetch(ZOOM_ROOM_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: topicTitle }),
       });
-  
+
       if (!response.ok) {
         const payload = (await response.json().catch(() => ({}))) as {
           error?: string;
           details?: string;
         };
         throw new Error(
-          payload.error || payload.details || "Failed to get Zoom meeting"
+          payload.error || payload.details || "Failed to create Zoom meeting"
         );
       }
-  
-      const { join_url, meeting_id, password } = (await response.json()) as {
+
+      const { join_url, meeting_id } = (await response.json()) as {
         join_url: string;
         meeting_id: string;
-        password: string;
       };
-  
+
       if (join_url) {
-        // Use the direct join URL - Zoom handles joining existing meetings
+        setCreatedMeetingId(meeting_id);
         window.open(join_url, "_blank");
       } else {
         throw new Error("No join_url received from the server.");
       }
-  
+
       setStatus("idle");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";
@@ -213,120 +202,140 @@ export default function Lake() {
   const busy = status === "joining" || status === "creating";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white font-sans">
-      <main className="flex w-full max-w-3xl flex-col gap-10 py-16 px-8 sm:px-16">
-        {/* Header */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold leading-10 tracking-tight text-black">
-            Lake
-          </h1>
-          <p className="text-sm text-slate-600">
-            Pick a topic to start a Zoom session, or join / create your own
-            meeting below.
-          </p>
-        </div>
+    <div className="flex min-h-screen font-sans transition-colors duration-300 bg-stone-50 dark:bg-neutral-950">
+      <main className="flex w-full max-w-5xl mx-auto gap-8 px-8 py-10">
 
-        {/* ── Topic Cards ── */}
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-black">Topics</h2>
-          {PLACEHOLDER_TOPICS.map((topic) => (
-            <div
-              key={topic.id}
-              className="flex items-center justify-between rounded-lg border border-slate-200 px-5 py-4"
-            >
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-black">
-                  {topic.title}
-                </span>
-                <span className="text-xs text-slate-500">
-                  {topic.description}
-                </span>
-              </div>
-              <button
-                className="ml-4 shrink-0 rounded-md bg-black px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => joinTopic(topic.title)}
-                disabled={busy}
-              >
-                Join
-              </button>
-            </div>
-          ))}
-        </section>
+        {/* ── Right: Content ── */}
+        <div className="flex-1 flex flex-col min-h-[calc(100vh-5rem)]">
 
-        {/* ── Divider ── */}
-        <div className="flex items-center gap-3">
-          <div className="h-px flex-1 bg-slate-200" />
-          <span className="text-xs text-slate-400">
-            or join / create manually
-          </span>
-          <div className="h-px flex-1 bg-slate-200" />
-        </div>
-
-        {/* ── Manual Join / Create Section ── */}
-        <section className="flex flex-col gap-4">
-          <label className="flex flex-col gap-2 text-left text-sm text-slate-700">
-            Meeting ID
-            <input
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-              value={meetingNumber}
-              onChange={(event) => setMeetingNumber(event.target.value)}
-              placeholder="123 456 7890"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-left text-sm text-slate-700">
-            Password (optional)
-            <input
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-              value={passcode}
-              onChange={(event) => setPasscode(event.target.value)}
-              placeholder="Password"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-left text-sm text-slate-700">
-            Your name
-            <input
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-              value={userName}
-              onChange={(event) => setUserName(event.target.value)}
-              placeholder="Jane Doe"
-            />
-          </label>
-
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-          {createdMeetingId ? (
-            <p className="text-sm text-green-600">
-              Meeting created: {createdMeetingId}
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-stone-900 dark:text-white mb-2">The Lake</h1>
+            <p className="text-sm text-stone-500 dark:text-neutral-400">
+              Pick a topic to start a Zoom session, or join/create your own meeting below.
             </p>
-          ) : null}
-
-          <div className="flex gap-3">
-            <button
-              className="flex-1 rounded-md bg-black px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={joinMeeting}
-              disabled={busy}
-            >
-              {status === "joining" ? "Joining..." : "Join Meeting"}
-            </button>
-            <button
-              className="flex-1 rounded-md border border-black px-4 py-2 text-sm font-semibold text-black hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={createMeeting}
-              disabled={busy}
-            >
-              {status === "creating" ? "Creating..." : "Create Zoom Meeting"}
-            </button>
           </div>
-        </section>
+
+          {/* ── Topic Cards ── */}
+          <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-4 text-stone-900 dark:text-white">Topic Rooms</h2>
+            <div className="flex flex-col gap-3">
+              {PLACEHOLDER_TOPICS.map((topic) => (
+                <div
+                  key={topic.id}
+                  className="flex items-center justify-between rounded-2xl border p-5 transition-colors duration-300 bg-white dark:bg-white/5 border-stone-200 dark:border-white/10"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold text-stone-900 dark:text-white">
+                      {topic.title}
+                    </span>
+                    <span className="text-xs text-stone-500 dark:text-neutral-400">
+                      {topic.description}
+                    </span>
+                  </div>
+                  <button
+                    className="ml-4 shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed bg-sky-400 hover:bg-sky-300 text-neutral-950"
+                    onClick={() => joinTopic(topic.title)}
+                    disabled={busy}
+                  >
+                    Join
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Divider ── */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-px flex-1 bg-stone-200 dark:bg-white/10 transition-colors duration-300" />
+            <span className="text-xs text-stone-400 dark:text-neutral-600 transition-colors duration-300">
+              or join / create manually
+            </span>
+            <div className="h-px flex-1 bg-stone-200 dark:bg-white/10 transition-colors duration-300" />
+          </div>
+
+          {/* ── Manual Join/Create Section ── */}
+          <section className="rounded-2xl border p-6 transition-colors duration-300 bg-white dark:bg-white/5 border-stone-200 dark:border-white/10">
+            <div className="flex flex-col gap-4">
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="font-semibold text-stone-700 dark:text-neutral-300">Meeting ID</span>
+                <input
+                  className="px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2
+                    bg-white dark:bg-white/5 border-stone-200 dark:border-white/10
+                    text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-neutral-600
+                    focus:border-sky-400 focus:ring-sky-400/20"
+                  value={meetingNumber}
+                  onChange={(e) => setMeetingNumber(e.target.value)}
+                  placeholder="123 456 7890"
+                />
+              </label>
+
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="font-semibold text-stone-700 dark:text-neutral-300">Password (optional)</span>
+                <input
+                  className="px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2
+                    bg-white dark:bg-white/5 border-stone-200 dark:border-white/10
+                    text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-neutral-600
+                    focus:border-sky-400 focus:ring-sky-400/20"
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="Password"
+                />
+              </label>
+
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="font-semibold text-stone-700 dark:text-neutral-300">Your name</span>
+                <input
+                  className="px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2
+                    bg-white dark:bg-white/5 border-stone-200 dark:border-white/10
+                    text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-neutral-600
+                    focus:border-sky-400 focus:ring-sky-400/20"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Jane Doe"
+                />
+              </label>
+
+              {error && (
+                <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+              )}
+              
+              {createdMeetingId && (
+                <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                  Meeting created: {createdMeetingId}
+                </p>
+              )}
+
+              <div className="flex gap-3 mt-2">
+                <button
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed bg-sky-400 hover:bg-sky-300 text-neutral-950"
+                  onClick={joinMeeting}
+                  disabled={busy}
+                >
+                  {status === "joining" ? "Joining..." : "Join Meeting"}
+                </button>
+                <button
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed bg-stone-200 dark:bg-white/10 hover:bg-stone-300 dark:hover:bg-white/20 text-stone-700 dark:text-neutral-300"
+                  onClick={createMeeting}
+                  disabled={busy}
+                >
+                  {status === "creating" ? "Creating..." : "Create Meeting"}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
       </main>
 
       {/* ── Zoom iframe overlay ── */}
       {showZoomFrame && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
-            <span className="text-sm font-semibold text-black">
+        <div className="fixed inset-0 z-50 flex flex-col bg-stone-50 dark:bg-neutral-950 transition-colors duration-300">
+          <div className="flex items-center justify-between border-b px-4 py-3 border-stone-200 dark:border-white/10 transition-colors duration-300">
+            <span className="text-sm font-semibold text-stone-900 dark:text-white">
               Zoom Meeting
             </span>
             <button
-              className="rounded-md border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50"
+              className="rounded-xl px-4 py-2 text-sm font-semibold transition-colors bg-stone-200 dark:bg-white/10 hover:bg-stone-300 dark:hover:bg-white/20 text-stone-700 dark:text-neutral-300"
               onClick={closeZoomFrame}
             >
               Leave

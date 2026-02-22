@@ -29,7 +29,10 @@ export async function POST(request: NextRequest) {
 
     // ── Check for an existing room ──
     const existing = getRoom(topic);
+    console.log('Looking for room:', topic);
+    console.log('Found existing room?', existing ? 'YES' : 'NO');
     if (existing) {
+      console.log('Returning existing room:', existing.meetingId, existing.password);
       return NextResponse.json({
         join_url: existing.joinUrl,
         meeting_id: existing.meetingId,
@@ -37,6 +40,8 @@ export async function POST(request: NextRequest) {
         reused: true,
       });
     }
+
+    console.log('No existing room found, creating new one...');
 
     // ── No active room – create a new Zoom meeting ──
 

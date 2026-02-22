@@ -24,7 +24,7 @@ const Navbar = () => {
       {/* Logo */}
       <Link
         href="/home"
-        className="ml-4 text-lg md:text-3xl font-bold !text-slate-900 !no-underline hover:!text-gray-400"
+        className="ml-4 text-lg md:text-3xl font-bold !text-slate-100 !no-underline hover:!text-gray-400"
       >
         unstuck duck
       </Link>
@@ -37,8 +37,8 @@ const Navbar = () => {
               href={item.href}
               className={`${
                 isActive(item.href)
-                  ? "!text-spotify-green visited:!text-spotify-green"
-                  : "!text-slate-900 visited:!text-slate-900"
+                  ? "!text-gray-600 visited:!text-spotify-green"
+                  : "!text-slate-100 visited:!text-slate-100"
               } !no-underline hover:!text-gray-600`}
             >
               {item.label}
