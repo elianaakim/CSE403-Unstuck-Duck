@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
     // Get additional user info
     const { data: userInfo, error: infoError } = await supabase
-      .from("User Info")
+      .from("User_Info")
       .select(
         `
         first_name,
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         Users!inner (
           username,
           email,
-          date_created
+          created_at
         )
       `
       )
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        ...userInfo,
+        ...(typeof userInfo === "object" && userInfo !== null ? userInfo : {}),
       },
     });
   } catch (error) {

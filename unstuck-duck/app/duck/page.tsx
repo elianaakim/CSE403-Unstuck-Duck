@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
+import { clientSupabase } from "../../backend/src/supabase/supabase";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -149,9 +150,16 @@ export default function Duck() {
     if (!sessionId) return;
     setIsLoading(true);
     try {
+      const {
+        data: { session: authSession },
+      } = await clientSupabase.auth.getSession();
+
       const res = await fetch(`/api/sessions/end`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authSession?.access_token ?? ""}`,
+        },
         body: JSON.stringify({ sessionId }),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -180,7 +188,9 @@ export default function Duck() {
         <aside className="flex flex-col items-center gap-6 w-56 flex-shrink-0 pt-4">
           <div className={`relative ${status === "active" ? "" : "hidden"}`}>
             <div
-              className={`absolute inset-0 rounded-full blur-2xl scale-110 bg-amber-400 transition-opacity duration-500 ${status === "active" ? "opacity-30" : "opacity-10"}`}
+              className={`absolute inset-0 rounded-full blur-2xl scale-110 bg-amber-400 transition-opacity duration-500 ${
+                status === "active" ? "opacity-30" : "opacity-10"
+              }`}
             />
             <Image
               src="/duck_l.png"
@@ -278,7 +288,6 @@ export default function Duck() {
             </div>
           )}
         </aside>
-
         {/* ── Right: chat ── */}
         <div className="flex-1 flex flex-col min-h-[calc(100vh-5rem)]">
           {/* Idle: topic picker */}
@@ -333,7 +342,9 @@ export default function Duck() {
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+                    className={`flex gap-3 ${
+                      msg.role === "user" ? "flex-row-reverse" : ""
+                    }`}
                   >
                     <div className="flex-shrink-0">
                       {msg.role === "duck" ? (
@@ -351,7 +362,9 @@ export default function Duck() {
                       )}
                     </div>
                     <div
-                      className={`max-w-[75%] flex flex-col gap-1 ${msg.role === "user" ? "items-end" : "items-start"}`}
+                      className={`max-w-[75%] flex flex-col gap-1 ${
+                        msg.role === "user" ? "items-end" : "items-start"
+                      }`}
                     >
                       <div
                         className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed transition-colors duration-300 ${
@@ -416,6 +429,22 @@ export default function Duck() {
             </>
           )}
         </div>
+        <button
+          onClick={async () => {
+            const {
+              data: { session: authSession },
+            } = await clientSupabase.auth.getSession();
+            const res = await fetch("/api/history", {
+              headers: {
+                Authorization: `Bearer ${authSession?.access_token ?? ""}`,
+              },
+            });
+            const data = await res.json();
+            console.log("History:", JSON.stringify(data, null, 2));
+          }}
+        >
+          Test History
+        </button>
       </main>
     </div>
   );

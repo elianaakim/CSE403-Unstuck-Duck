@@ -7,14 +7,13 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Url } from "next/dist/shared/lib/router/router";
 
-
 const navItems = [
   { id: "duck", label: "The Duck", href: "/duck" },
   { id: "lake", label: "The Lake", href: "/lake" },
   { id: "classroom", label: "Classroom", href: "/classroom" },
 ];
 
-const Navbar: React.FunctionComponent<INavbarProps> = () => {
+const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
 
@@ -22,7 +21,10 @@ const Navbar: React.FunctionComponent<INavbarProps> = () => {
   const isDark = resolvedTheme === "dark";
 
   return (
-    <nav className="pb-4 pt-2 flex justify-between items-center">
+    <nav
+      suppressHydrationWarning
+      className="pb-4 pt-2 flex justify-between items-center"
+    >
       {/* Logo */}
       <Link
         href="/home"

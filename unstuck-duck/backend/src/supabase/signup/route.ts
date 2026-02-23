@@ -5,8 +5,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { username, email, password, firstName, lastName, isTeacher } = body;
+    console.log("Signup called with:", {
+      username,
+      email,
+      firstName,
+      lastName,
+    });
 
-    // Validation
     if (!username || !email || !password || !firstName || !lastName) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -20,22 +25,12 @@ export async function POST(req: NextRequest) {
       password,
       firstName,
       lastName,
-      isTeacher: isTeacher || false,
     });
 
-    // Don't return sensitive data
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        isTeacher: user.is_teacher,
-      },
-    });
+    console.log("User created:", user);
+    return NextResponse.json({ user });
   } catch (error) {
-    console.error("Signup error:", error);
+    console.error("Signup error full details:", error);
     return NextResponse.json(
       { error: error.message || "Failed to create user" },
       { status: 500 }

@@ -14,22 +14,70 @@ export type Database = {
   };
   public: {
     Tables: {
-      "User Info": {
+      Messages: {
+        Row: {
+          content: string | null;
+          created_at: string | null;
+          message_id: string;
+          role: string | null;
+          session_id: string;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string | null;
+          message_id?: string;
+          role?: string | null;
+          session_id?: string;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string | null;
+          message_id?: string;
+          role?: string | null;
+          session_id?: string;
+        };
+        Relationships: [];
+      };
+      Sessions: {
+        Row: {
+          ended_at: string | null;
+          score: number | null;
+          session_id: string;
+          started_at: string | null;
+          topic: string | null;
+          user_id: string;
+        };
+        Insert: {
+          ended_at?: string | null;
+          score?: number | null;
+          session_id?: string;
+          started_at?: string | null;
+          topic?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          ended_at?: string | null;
+          score?: number | null;
+          session_id?: string;
+          started_at?: string | null;
+          topic?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      User_Info: {
         Row: {
           first_name: string;
-          is_teacher: boolean | null;
           last_name: string | null;
           user_id: string;
         };
         Insert: {
           first_name: string;
-          is_teacher?: boolean | null;
           last_name?: string | null;
-          user_id: string;
+          user_id?: string;
         };
         Update: {
           first_name?: string;
-          is_teacher?: boolean | null;
           last_name?: string | null;
           user_id?: string;
         };
@@ -37,25 +85,25 @@ export type Database = {
       };
       Users: {
         Row: {
-          date_created: string | null;
+          created_at: string;
           email: string | null;
           password: string | null;
           user_id: string;
-          username: string;
+          username: string | null;
         };
         Insert: {
-          date_created?: string | null;
+          created_at: string;
           email?: string | null;
           password?: string | null;
           user_id?: string;
-          username?: string;
+          username?: string | null;
         };
         Update: {
-          date_created?: string | null;
+          created_at?: string;
           email?: string | null;
           password?: string | null;
           user_id?: string;
-          username?: string;
+          username?: string | null;
         };
         Relationships: [];
       };

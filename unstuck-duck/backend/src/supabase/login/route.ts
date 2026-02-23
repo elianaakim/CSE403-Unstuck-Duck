@@ -22,16 +22,15 @@ export async function POST(req: NextRequest) {
 
     // Get additional user info from your tables
     const { data: userInfo, error: infoError } = await clientSupabase
-      .from("User Info")
+      .from("User_Info")
       .select(
         `
         first_name,
         last_name,
-        is_teacher,
         Users!inner (
           username,
           email,
-          date_created
+          created_at
         )
       `
       )

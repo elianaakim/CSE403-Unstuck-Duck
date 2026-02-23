@@ -1,22 +1,14 @@
-'use client';
+"use client";
 
-import { useState, SubmitEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "../../backend/src/supabase/authcontext";
 
 export default function LoginPage() {
-  // const router = useRouter();
-  // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
-  // const [isSignUp, setIsSignUp] = useState(false);
-  // const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  // const [isLoading, setIsLoading] = useState(false); //OLD
-
-  // iris
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, signUp } = useAuth(); // Get auth functions
+  const { signIn, signUp, user } = useAuth(); // Get auth functions
 
   // Check if we should show signup mode from URL
   const [isSignUp, setIsSignUp] = useState(
@@ -25,20 +17,26 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Add state for signup fields
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [isTeacher, setIsTeacher] = useState(false);
 
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
   const [isLoading, setIsLoading] = useState(false);
-  //
 
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  useEffect(() => {
+    if (user) {
+      router.push("/home");
+    }
+  }, [user, router]);
+
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePassword = (password: string) => password.length >= 8;
 
-  const handleSubmit = async (e: SubmitEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { email?: string; password?: string } = {};
 
@@ -50,13 +48,11 @@ export default function LoginPage() {
     else if (isSignUp && !validatePassword(password))
       newErrors.password = "Password must be at least 8 characters";
 
-    // iris
     if (isSignUp) {
       if (!username) newErrors.email = "Username is required";
       if (!firstName) newErrors.email = "First name is required";
       if (!lastName) newErrors.email = "Last name is required";
     }
-    //
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -66,11 +62,11 @@ export default function LoginPage() {
     setErrors({});
     setIsLoading(true);
 
-    setTimeout(() => {
-      console.log("Form submitted:", { email, password, isSignUp });
-      router.push("/home");
-      setIsLoading(false);
-    }, 1500);
+    // setTimeout(() => {
+    //   console.log("Form submitted:", { email, password, isSignUp });
+    //   router.push("/home");
+    //   setIsLoading(false);
+    // }, 1500);
 
     // try {
     //   const response = await fetch('/api/auth/login', {
@@ -97,12 +93,11 @@ export default function LoginPage() {
           password,
           firstName,
           lastName,
-          isTeacher,
         });
       } else {
         await signIn(email, password);
       }
-      router.push("/home");
+      // router.push("/home");
     } catch (error) {
       setErrors({ email: error.message || "Authentication failed" });
     } finally {
@@ -119,7 +114,6 @@ export default function LoginPage() {
     setUsername("");
     setFirstName("");
     setLastName("");
-    setIsTeacher(false);
   };
 
   return (

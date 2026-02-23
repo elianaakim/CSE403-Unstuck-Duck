@@ -7,17 +7,15 @@ export interface CreateUserInput {
   password: string;
   firstName: string;
   lastName: string;
-  isTeacher: boolean;
 }
 
 export interface UserWithProfile {
   id: string; 
   username: string;
   email: string | null;
-  date_created: string | null;
+  created_at: string | null;
   first_name: string;
   last_name: string | null;
-  is_teacher: boolean | null;
 }
 
 export async function createUserWithProfile(
@@ -25,7 +23,7 @@ export async function createUserWithProfile(
 ): Promise<UserWithProfile> {
   const supabase = getServiceSupabase();
 
-  // 1. Create auth user (this handles password hashing)
+  // Create auth user 
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: input.email,
     password: input.password,
@@ -42,27 +40,27 @@ export async function createUserWithProfile(
   if (!authData.user) throw new Error("User creation failed");
   const userId = authData.user.id;
 
-  // 2. Insert into your users table
+  // Insert into users table
   const { data: user, error: userError } = await supabase
     .from("Users") 
     .insert({
+        user_id: userId,
       username: input.username,
       email: input.email,
-      date_created: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     })
     .select()
     .single();
 
   if (userError) throw userError;
 
-  // 3. Insert into user_info table
+  // Insert into user_info table
   const { error: infoError } = await supabase
-    .from("User Info") 
+    .from("User_Info") 
     .insert({
       user_id: userId, 
       first_name: input.firstName,
       last_name: input.lastName,
-      is_teacher: input.isTeacher,
     });
 
   if (infoError) throw infoError;
@@ -71,10 +69,9 @@ export async function createUserWithProfile(
     id: userId,
     username: user.username,
     email: user.email,
-    date_created: user.date_created,
+    created_at: user.created_at,
     first_name: input.firstName,
     last_name: input.lastName,
-    is_teacher: input.isTeacher,
   };
 }
 
@@ -100,7 +97,7 @@ export async function getUserProfile(userId: string) {
   const supabase = getServiceSupabase();
 
   const { data, error } = await supabase
-    .from("User Info")
+    .from("User_Info")
     .select(
       `
       first_name,

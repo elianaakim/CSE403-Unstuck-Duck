@@ -2,14 +2,13 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { clientSupabase } from "./supabase";
 import { User } from "@supabase/supabase-js";
 
-// Define your UserProfile type based on your database
+// Define UserProfile
 export interface UserProfile {
   first_name: string;
   last_name: string | null;
-  is_teacher: boolean | null;
   username: string;
   email: string | null;
-  date_created: string | null;
+  created_at: string;
 }
 
 // Define the signup data type
@@ -19,17 +18,14 @@ export interface SignUpData {
   password: string;
   firstName: string;
   lastName: string;
-  isTeacher: boolean;
 }
 
-// Define the shape of our auth context
+// Define the shape of auth context
 interface AuthContextType {
-  // State - these can be null because they might not exist yet
   user: User | null; // null when logged out
   profile: UserProfile | null; // null when logged out or not loaded
   loading: boolean; // true while checking auth status
 
-  // Functions - these don't return values, just promises
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (data: SignUpData) => Promise<void>;
   signOut: () => Promise<void>;
@@ -42,75 +38,95 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-    const fetchProfile = async (userId: string): Promise<void> => {
-    // First, get the user info
-    const { data: userInfo, error: userInfoError } = await clientSupabase
-        .from("User Info")
+  // Get the user info
+  const fetchProfile = async (userId: string): Promise<void> => {
+    try {
+      const { data: userInfo, error: userInfoError } = await clientSupabase
+        .from("User_Info")
         .select(
-        `
-        first_name,
-        last_name,
-        is_teacher,
-        user_id
-        `
+          `
+                first_name,
+                last_name,
+                user_id
+                `
         )
         .eq("user_id", userId)
         .single();
 
-    if (userInfoError) {
-        console.error("Error fetching user info:", userInfoError);
+      if (userInfoError) {
+        // console.error("Error fetching user info:", userInfoError);
+        console.error(
+          "Error fetching user info:",
+          JSON.stringify(userInfoError)
+        );
+        console.error("Code:", userInfoError.code);
+        console.error("Message:", userInfoError.message);
+        console.error("Details:", userInfoError.details);
+        setLoading(false);
         return;
-    }
+      }
 
-    // Then, get the user data from Users table
-    const { data: userData, error: userDataError } = await clientSupabase
+      // Get the user data from Users table
+      const { data: userData, error: userDataError } = await clientSupabase
         .from("Users")
         .select(
-        `
-        username,
-        email,
-        date_created
-        `
+          `
+                username,
+                email,
+                created_at
+                `
         )
-        .eq("user_id", userId) // or .eq("id", userId) depending on your schema
+        .eq("user_id", userId)
         .single();
 
-    if (userDataError) {
+      if (userDataError) {
         console.error("Error fetching user data:", userDataError);
+        setLoading(false);
         return;
-    }
+      }
 
-    if (userInfo && userData) {
+      if (userInfo && userData) {
         setProfile({
-        first_name: userInfo.first_name,
-        last_name: userInfo.last_name,
-        is_teacher: userInfo.is_teacher,
-        username: userData.username,
-        email: userData.email,
-        date_created: userData.date_created,
+          first_name: userInfo.first_name,
+          last_name: userInfo.last_name,
+          username: userData.username,
+          email: userData.email,
+          created_at: userData.created_at,
         });
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("fetchProfile threw:", error);
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
-    };
+  };
 
   useEffect(() => {
     clientSupabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id); 
+        setTimeout(() => {
+          fetchProfile(session.user.id);
+        }, 0);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const {
       data: { subscription },
-    } = clientSupabase.auth.onAuthStateChange(async (event, session) => {
+    } = clientSupabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        await fetchProfile(session.user.id); 
+        setTimeout(() => {
+          fetchProfile(session.user.id);
+        }, 0);
       } else {
         setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -125,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (data: SignUpData): Promise<void> => {
-    const response = await fetch("/api/auth/signup", {
+    const response = await fetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -135,13 +151,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const error = await response.json();
       throw new Error(error.error);
     }
-    // After successful signup, you might want to auto-login
-    await signIn(data.email, data.password);
+    // await signIn(data.email, data.password);
+    signIn(data.email, data.password);
   };
 
   const signOut = async (): Promise<void> => {
     await clientSupabase.auth.signOut();
-    // Auth state listener will clear user/profile
   };
 
   return (
