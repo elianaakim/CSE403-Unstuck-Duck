@@ -3,8 +3,8 @@
  * Rooms persist across server restarts.
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 export interface ZoomRoom {
   topic: string;
@@ -15,7 +15,7 @@ export interface ZoomRoom {
 }
 
 const ROOM_TTL_MS = 30 * 60 * 1000;
-const STORE_PATH = path.join(process.cwd(), '.zoom-rooms.json');
+const STORE_PATH = path.join(process.cwd(), ".zoom-rooms.json");
 
 function key(topic: string) {
   return topic.trim().toLowerCase();
@@ -25,12 +25,12 @@ function key(topic: string) {
 function loadRooms(): Map<string, ZoomRoom> {
   try {
     if (fs.existsSync(STORE_PATH)) {
-      const data = fs.readFileSync(STORE_PATH, 'utf-8');
+      const data = fs.readFileSync(STORE_PATH, "utf-8");
       const obj = JSON.parse(data);
       return new Map(Object.entries(obj));
     }
   } catch (err) {
-    console.error('Failed to load rooms from disk:', err);
+    console.error("Failed to load rooms from disk:", err);
   }
   return new Map();
 }
@@ -39,15 +39,15 @@ function loadRooms(): Map<string, ZoomRoom> {
 function saveRooms(rooms: Map<string, ZoomRoom>): void {
   try {
     const obj = Object.fromEntries(rooms);
-    fs.writeFileSync(STORE_PATH, JSON.stringify(obj, null, 2), 'utf-8');
-    console.log('Zoom rooms will be stored at:', STORE_PATH);
+    fs.writeFileSync(STORE_PATH, JSON.stringify(obj, null, 2), "utf-8");
+    console.log("Zoom rooms will be stored at:", STORE_PATH);
   } catch (err) {
-    console.error('Failed to save rooms to disk:', err);
+    console.error("Failed to save rooms to disk:", err);
   }
 }
 
 // Initialize from disk
-let rooms = loadRooms();
+const rooms = loadRooms();
 
 export function getRoom(topic: string): ZoomRoom | undefined {
   const room = rooms.get(key(topic));
@@ -63,7 +63,7 @@ export function getRoom(topic: string): ZoomRoom | undefined {
 }
 
 export function setRoom(room: ZoomRoom): void {
-  console.log('Saving room to disk:', room.topic, 'at', STORE_PATH);
+  console.log("Saving room to disk:", room.topic, "at", STORE_PATH);
   rooms.set(key(room.topic), room);
   saveRooms(rooms);
 }

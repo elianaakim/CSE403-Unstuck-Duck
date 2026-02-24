@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { getRoom, setRoom } from "../../../lib/zoomRoomsStore";
+import { createClient } from "@supabase/supabase-js";
 
-/**
- * POST /api/zoom/room
- *
- * "Get or create" a Zoom meeting for a given topic.
- *
- * Body: { topic: string }
- *
- * - If a room for this topic already exists (and hasn't expired), return it.
- * - Otherwise create a new Zoom meeting, store it, and return it.
- *
- * The first person to hit this endpoint for a topic effectively becomes the
- * host; everyone else receives the same join_url and joins as a participant.
- */
+const ROOM_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+// Use service key for server routes
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  process.env.SUPABASE_SERVICE_KEY ?? ""
+);
+
+type ZoomRoomRow = {
+  topic: string;
+  meeting_id: string;
+  join_url: string;
+  password: string | null;
+  created_at: string;
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { topic?: string };
@@ -27,25 +30,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Check for an existing room ──
-    const existing = getRoom(topic);
-    console.log('Looking for room:', topic);
-    console.log('Found existing room?', existing ? 'YES' : 'NO');
-    if (existing) {
-      console.log('Returning existing room:', existing.meetingId, existing.password);
-      return NextResponse.json({
-        join_url: existing.joinUrl,
-        meeting_id: existing.meetingId,
-        password: existing.password,
-        reused: true,
-      });
+    // 1️⃣ Check for existing room
+    const { data: existing, error: selectErr } = await supabase
+      .from("zoom_rooms")
+      .select("topic, meeting_id, join_url, password, created_at")
+      .eq("topic", topic)
+      .maybeSingle<ZoomRoomRow>();
+
+    if (selectErr) {
+      console.error("Supabase select error:", selectErr);
+      return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    console.log('No existing room found, creating new one...');
+    if (existing) {
+      const createdAtMs = new Date(existing.created_at).getTime();
+      const isFresh = Date.now() - createdAtMs < ROOM_TTL_MS;
 
-    // ── No active room – create a new Zoom meeting ──
+      if (isFresh) {
+        return NextResponse.json({
+          join_url: existing.join_url,
+          meeting_id: existing.meeting_id,
+          password: existing.password,
+          reused: true,
+        });
+      }
+    }
 
-    // 1. Get access token
+    // 2️⃣ Get Zoom access token
     const tokenResponse = await axios.post(
       "https://zoom.us/oauth/token",
       new URLSearchParams({
@@ -66,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     const accessToken = tokenResponse.data.access_token;
 
-    // 2. Create the meeting
+    // 3️⃣ Create new Zoom meeting
     const zoomResponse = await axios.post(
       "https://api.zoom.us/v2/users/me/meetings",
       {
@@ -74,7 +85,7 @@ export async function POST(request: NextRequest) {
         type: 2,
         start_time: new Date().toISOString(),
         duration: 30,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezone: "America/Los_Angeles",
         settings: {
           host_video: true,
           participant_video: true,
@@ -90,36 +101,41 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const { join_url, id: meetingId, password } = zoomResponse.data;
+    const meetingId = String(zoomResponse.data.id);
+    const joinUrl = String(zoomResponse.data.join_url);
+    const password = zoomResponse.data.password
+      ? String(zoomResponse.data.password)
+      : null;
 
-    // 3. Store the room
-    setRoom({
-      topic,
-      meetingId: String(meetingId),
-      joinUrl: join_url,
-      password: password ?? "",
-      createdAt: Date.now(),
-    });
-    console.log("Created Zoom meeting:", { topic, meetingId, join_url, password });
+    // 4️⃣ Store in Supabase (topic must be UNIQUE)
+    const { error: upsertErr } = await supabase.from("zoom_rooms").upsert(
+      {
+        topic,
+        meeting_id: meetingId,
+        join_url: joinUrl,
+        password,
+        created_at: new Date().toISOString(),
+      },
+      { onConflict: "topic" }
+    );
+
+    if (upsertErr) {
+      console.error("Supabase upsert error:", upsertErr);
+    }
 
     return NextResponse.json({
-      join_url,
+      join_url: joinUrl,
       meeting_id: meetingId,
       password,
       reused: false,
     });
-  } catch (error: unknown) {
-    const err = error as {
-      response?: { data?: unknown };
-      message?: string;
-    };
-
-    console.error("Zoom Room API Error:", err.response?.data || err.message);
+  } catch (error: any) {
+    console.error("Zoom Room Error:", error.response?.data || error.message);
 
     return NextResponse.json(
       {
-        error: "Failed to get or create Zoom room",
-        details: err.message ?? "Unknown error",
+        error: "Failed to get/create Zoom room",
+        details: error.message ?? "Unknown error",
       },
       { status: 500 }
     );
