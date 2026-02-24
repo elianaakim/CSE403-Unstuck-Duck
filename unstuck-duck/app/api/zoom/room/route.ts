@@ -129,13 +129,18 @@ export async function POST(request: NextRequest) {
       password,
       reused: false,
     });
-  } catch (error: any) {
-    console.error("Zoom Room Error:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    const axiosError = error as {
+      response?: { data?: unknown };
+      message?: string;
+    };
+    console.error("Zoom Room Error:", axiosError.response?.data || err.message);
 
     return NextResponse.json(
       {
         error: "Failed to get/create Zoom room",
-        details: error.message ?? "Unknown error",
+        details: err.message ?? "Unknown error",
       },
       { status: 500 }
     );
