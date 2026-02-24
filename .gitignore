@@ -59,6 +59,8 @@ Thumbs.db
 # Environment variables
 */.env.local
 unstuck-duck/.env.local
+.env.local
+.env
 
 .zoom-rooms.json
 .env
