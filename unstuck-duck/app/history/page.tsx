@@ -180,15 +180,15 @@ export default function HistoryPage() {
                                   </div>
                                 )}
                               </div>
-                              <div className={`max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
+                              <div className={`max-w-[75%] flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                 <div
-                                  className={`px-3 py-2 rounded-xl text-sm leading-relaxed inline-block ${
+                                    className={`px-3 py-2 rounded-xl text-sm leading-relaxed break-words  ${
                                     msg.role === 'assistant'
-                                      ? 'bg-stone-100 dark:bg-white/10 text-stone-800 dark:text-neutral-200'
-                                      : 'bg-amber-400 text-neutral-950'
-                                  }`}
+                                        ? 'bg-stone-100 dark:bg-white/10 text-stone-800 dark:text-neutral-200'
+                                        : 'bg-amber-400 text-neutral-950 whitespace-pre-wrap'
+                                    }`}
                                 >
-                                  {msg.content}
+                                    {msg.content}
                                 </div>
                               </div>
                             </div>

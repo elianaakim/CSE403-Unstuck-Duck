@@ -97,6 +97,13 @@ export default function Duck() {
     if (!chat.trim() || !sessionId || status !== "active" || isLoading) return;
     const userText = chat.trim();
     setChat("");
+    
+    // Reset textarea height
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.style.height = 'auto';
+    }
+    
     addMessage("user", userText);
     setIsLoading(true);
     try {
@@ -417,20 +424,34 @@ export default function Duck() {
 
                 {status === "active" && (
                   <form onSubmit={handleSend} className="flex gap-3">
-                    <input
+                    <textarea
                       value={chat}
-                      onChange={(e) => setChat(e.target.value)}
-                      placeholder="Explain to the duck…"
+                      onChange={(e) => {
+                        setChat(e.target.value);
+                        // Auto-resize
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      onKeyDown={(e) => {
+                        // Submit on Enter (without Shift)
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      placeholder="Explain to the duck… (Shift+Enter for new line)"
                       disabled={isLoading}
-                      className="flex-1 px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2
+                      rows={1}
+                      className="flex-1 px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2 resize-none overflow-hidden
                         bg-white dark:bg-white/5 border-stone-200 dark:border-white/10
                         text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-neutral-600
                         focus:border-amber-400 focus:ring-amber-400/20"
+                      style={{ minHeight: '48px', maxHeight: '200px' }}
                     />
                     <button
                       type="submit"
                       disabled={isLoading || !chat.trim()}
-                      className="px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-50 bg-amber-400 hover:bg-amber-300 text-neutral-950"
+                      className="px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-50 bg-amber-400 hover:bg-amber-300 text-neutral-950 self-end"
                     >
                       Send
                     </button>
