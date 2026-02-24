@@ -64,7 +64,7 @@ const Navbar: React.FC = () => {
 
       {/* Right side: theme toggle + avatar */}
       <div className="mr-4 flex items-center gap-3">
-        {/* Toggle */}
+        {/* Light/dark mode toggle, disabled for now
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
@@ -90,7 +90,7 @@ const Navbar: React.FC = () => {
               }
             `}
           />
-        </button>
+        </button> */}
 
         {/* Globe / avatar */}
         <button 
