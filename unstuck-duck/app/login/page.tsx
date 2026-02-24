@@ -62,29 +62,6 @@ export default function LoginPage() {
     setErrors({});
     setIsLoading(true);
 
-    // setTimeout(() => {
-    //   console.log("Form submitted:", { email, password, isSignUp });
-    //   router.push("/home");
-    //   setIsLoading(false);
-    // }, 1500);
-
-    // try {
-    //   const response = await fetch('/api/auth/login', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ email, password, type: isSignUp ? 'signup' : 'login' }),
-    //   });
-    //   const data = await response.json();
-    //   if (response.ok) {
-    //     router.push('/');
-    //   } else {
-    //     setErrors({ email: data.message || 'Authentication failed. Please try again.' });
-    //   }
-    // } catch {
-    //   setErrors({ email: 'An error occurred. Please check your connection and try again.' });
-    // } finally {
-    //   setIsLoading(false);
-    // }
     try {
       if (isSignUp) {
         await signUp({

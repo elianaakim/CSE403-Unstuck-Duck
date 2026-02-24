@@ -11,7 +11,7 @@ import { Url } from "next/dist/shared/lib/router/router";
 const navItems = [
   { id: "duck", label: "The Duck", href: "/duck" },
   { id: "lake", label: "The Lake", href: "/lake" },
-  { id: "classroom", label: "Classroom", href: "/classroom" },
+  { id: "History", label: "History", href: "/history" },
 ];
 
 const Navbar: React.FC = () => {

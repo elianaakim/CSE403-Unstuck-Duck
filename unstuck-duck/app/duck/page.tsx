@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { clientSupabase } from "../../backend/src/supabase/supabase";
 import ProtectedRoute from "@/Components/ProtectedRoute";
 
@@ -20,6 +21,7 @@ interface ChatMessage {
 type SessionStatus = "idle" | "active" | "ended";
 
 export default function Duck() {
+  const router = useRouter();
   // ── Session state ──
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -40,9 +42,6 @@ export default function Duck() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   function now() {
     return new Date().toLocaleTimeString([], {
@@ -167,9 +166,10 @@ export default function Duck() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setTeachingScore(data.finalTeachingScore);
-      setFinalAssessment(data.finalAssessment);
+      setFinalAssessment(teachingScore !== null ? `Your final teaching score is ${teachingScore}/100.` : "Session ended.");
       setStatus("ended");
-      addMessage("duck", data.message);
+      addMessage("duck", "Session ended! Here's your final assessment.");
+      console.log("STATUS:", status, "FINAL:", finalAssessment)
     } catch (err) {
       console.error("Failed to end session:", err);
     } finally {
@@ -267,27 +267,34 @@ export default function Duck() {
 
             {status === "ended" && finalAssessment && (
               <div className="w-full rounded-2xl border p-4 text-center transition-colors duration-300 bg-white dark:bg-white/5 border-stone-200 dark:border-white/10">
-                <p className="text-xs uppercase tracking-widest mb-2 text-stone-400 dark:text-neutral-500">
+                <p className="text-xs uppercase tracking-widest mb-4 text-stone-400 dark:text-neutral-500">
                   Session Complete
                 </p>
-                <p className="text-sm text-stone-600 dark:text-neutral-300 leading-relaxed">
-                  {finalAssessment}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStatus("idle");
-                    setSessionId(null);
-                    setMessages([]);
-                    setTopicInput("");
-                    setTeachingScore(null);
-                    setFeedback(null);
-                    setFinalAssessment(null);
-                  }}
-                  className="mt-3 w-full py-2 rounded-xl text-sm font-semibold bg-amber-400 hover:bg-amber-300 text-neutral-950 transition-colors"
-                >
-                  Start New Session
-                </button>
+                <div className="flex flex-col gap-3 w-full">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus("idle");
+                      setSessionId(null);
+                      setMessages([]);
+                      setTopicInput("");
+                      setTeachingScore(null);
+                      setFeedback(null);
+                      setFinalAssessment(null);
+                    }}
+                    className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-40 bg-amber-400 hover:bg-amber-300 text-neutral-950"
+                  >
+                    Start New Session
+                  </button>
+                  {/* View History */}
+                  <button
+                    type="button"
+                    onClick={() => router.push("/history")}
+                    className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-40 bg-stone-200 dark:bg-white/10 hover:bg-stone-300 dark:hover:bg-white/20 text-stone-700 dark:text-neutral-300"
+                  >
+                    View History
+                  </button>
+                </div>
               </div>
             )}
           </aside>
@@ -432,22 +439,6 @@ export default function Duck() {
               </>
             )}
           </div>
-          <button
-            onClick={async () => {
-              const {
-                data: { session: authSession },
-              } = await clientSupabase.auth.getSession();
-              const res = await fetch("/api/history", {
-                headers: {
-                  Authorization: `Bearer ${authSession?.access_token ?? ""}`,
-                },
-              });
-              const data = await res.json();
-              console.log("History:", JSON.stringify(data, null, 2));
-            }}
-          >
-            Test History
-          </button>
         </main>
       </div>
     </ProtectedRoute>
