@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/backend/src/supabase/authcontext";
 import { Url } from "next/dist/shared/lib/router/router";
 
 const navItems = [
@@ -15,10 +16,21 @@ const navItems = [
 
 const Navbar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
+  const { signOut } = useAuth();
 
   const isActive = (path: Url) => pathname === path;
   const isDark = resolvedTheme === "dark";
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
 
   return (
     <nav
@@ -81,13 +93,18 @@ const Navbar: React.FC = () => {
         </button>
 
         {/* Globe / avatar */}
-        <Image
-          src="/globe.svg"
-          alt="Profile picture"
-          width={40}
-          height={40}
-          className="cursor-pointer"
-        />
+        <button 
+          onClick={handleSignOut}
+          className="cursor-pointer hover:opacity-70 transition-opacity"
+          aria-label="Sign out"
+        >
+          <Image
+            src="/globe.svg"
+            alt="Sign out"
+            width={40}
+            height={40}
+          />
+        </button>
       </div>
     </nav>
   );
