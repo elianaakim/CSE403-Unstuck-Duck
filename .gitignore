@@ -61,3 +61,11 @@ Thumbs.db
 unstuck-duck/.env.local
 
 .zoom-rooms.json
+.env
+.env.local
+
+.zoom-rooms.json
+# Whisper models
+unstuck-duck/speech/models/
+*.bin
+
