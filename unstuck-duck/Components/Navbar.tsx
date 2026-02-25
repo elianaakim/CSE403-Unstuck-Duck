@@ -3,24 +3,40 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/backend/src/supabase/authcontext";
+import { Url } from "next/dist/shared/lib/router/router";
 
 const navItems = [
   { id: "duck", label: "The Duck", href: "/duck" },
   { id: "lake", label: "The Lake", href: "/lake" },
-  { id: "classroom", label: "Classroom", href: "/classroom" },
+  { id: "History", label: "History", href: "/history" },
 ];
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
+  const { signOut } = useAuth();
 
   const isActive = (path: string) => pathname === path;
   const isDark = resolvedTheme === "dark";
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
   return (
-    <nav className="pb-4 pt-2 flex justify-between items-center">
+    <nav
+      suppressHydrationWarning
+      className="pb-4 pt-2 flex justify-between items-center"
+    >
       {/* Logo */}
       <Link
         href="/home"
@@ -49,7 +65,7 @@ const Navbar = () => {
 
       {/* Right side: theme toggle + avatar */}
       <div className="mr-4 flex items-center gap-3">
-        {/* Toggle */}
+        {/* Light/dark mode toggle, disabled for now
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
@@ -75,16 +91,21 @@ const Navbar = () => {
               }
             `}
           />
-        </button>
+        </button> */}
 
         {/* Globe / avatar */}
-        <Image
-          src="/globe.svg"
-          alt="Profile picture"
-          width={40}
-          height={40}
-          className="cursor-pointer"
-        />
+        <button 
+          onClick={handleSignOut}
+          className="cursor-pointer hover:opacity-70 transition-opacity"
+          aria-label="Sign out"
+        >
+          <Image
+            src="/globe.svg"
+            alt="Sign out"
+            width={40}
+            height={40}
+          />
+        </button>
       </div>
     </nav>
   );

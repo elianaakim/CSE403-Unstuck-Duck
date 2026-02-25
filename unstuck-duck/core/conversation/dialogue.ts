@@ -1,7 +1,5 @@
 import { ollamaClient } from "../../app/lib/ollama";
 
-
-
 function extractAnswer(content: string): string {
   // Remove thinking tags if present
   const withoutThink = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();

@@ -70,12 +70,21 @@ http://localhost:11434
 
 ### End Session
 1. Press end session button to end the current session
+     * Must end session for session to show up in the history
 
 ### The Lake (WIP)
+1. You can choose the topic that you want to learn and hit join.
+2. Make sure your pop-up is not blocked so that your Zoom pop-up window can be shown.
+3. Join the Zoom meeting.
+   * redirects to user's zoom client
 
 ### History page
+1. You can review past conversations
+   * must be fully completed conversations that were finished with the end session button
+2. Click on the conversation previews to see the full conversation
 
-### Light mode/dark mode toggle (WIP)
+### Logging Out
+1. Press the globe icon on the top right of the navbar to log out of the user account
 
 ## How to report a bug
 

@@ -12,6 +12,8 @@ cd CSE403-Unstuck-Duck/unstuck-duck
 |------------------------|---------|
 | Components             | Reusable React components used across the UI |
 | app                    | Next.js routing, pages, server components, and API endpoints |
+| app/api                | API endpoints that manage interactions with the ollama model and Supabase |
+| app/[pages]            | Each page has its own folder that contains the page.tsx file for that page |
 | backend                | Legacy backend code (kept for reference during refactor) |
 | core/conversation      | Core logic for conversation handling, including Whisper transcription |
 | lib                    | Utility functions, helpers, and Ollama model integration |
@@ -22,7 +24,7 @@ cd CSE403-Unstuck-Duck/unstuck-duck
 
 
 ## How to build
-Install dependences 
+Install dependences - **make sure to conduct all npm calls in unstuck-duck subfolder**
 ```bash
 npm install
 ```
@@ -32,13 +34,12 @@ npm run dev
 ```
 
 ## How to test
-This project uses Mocha, Chai, and Supertest for testing.
+This project uses Mocha, Chai, and Supertest for testing - **make sure to conduct all npm calls in unstuck-duck subfolder**
 
 Run all tests with:
 ```bash
 npm run test
 ```
-Make sure to run all npm commands from /unstuck-duck/!
 
 ## How to add new tests
 All test files live in:

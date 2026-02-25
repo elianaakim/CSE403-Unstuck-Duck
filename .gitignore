@@ -65,6 +65,7 @@ unstuck-duck/.env
 .zoom-rooms.json
 .env
 .env.local
+unstuck-duck/.env.local
 
 .zoom-rooms.json
 # Whisper models

@@ -16,9 +16,14 @@ export interface Session {
   duration?: number;
 }
 
-// In-memory store for sessions
-const sessions = new Map<string, Session>();
+const globalStore = global as typeof global & {
+  sessions?: Map<string, Session>;
+};
+
+if (!globalStore.sessions) {
+  globalStore.sessions = new Map<string, Session>();
+}
 
 export function getSessionsStore() {
-  return sessions;
+  return globalStore.sessions!;
 }
