@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, SubmitEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../backend/src/supabase/authcontext";
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -114,11 +115,14 @@ export default function LoginPage() {
         <div className="relative z-10 w-full max-w-[420px]">
           {/* Header */}
           <div className="text-center mb-8">
-            <div
-              className="text-6xl mb-3 inline-block"
-              style={{ animation: "duckBounce 2s ease-in-out infinite" }}
-            >
-              🦆
+            <div className="text-6xl mb-3 inline-block" style={{ animation: 'duckBounce 2s ease-in-out infinite' }}>
+              <Image
+                  src="/duck.png"
+                  alt="Unstuck Duck Logo"
+                  width={50}
+                  height={50}
+                  draggable="false"
+                />
             </div>
             <h1 className="text-3xl font-bold text-white tracking-tight mb-1">
               {isSignUp ? "Create an account" : "Welcome back"}

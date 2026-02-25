@@ -20,7 +20,7 @@ const Navbar: React.FC = () => {
   const { resolvedTheme, setTheme } = useTheme();
   const { signOut } = useAuth();
 
-  const isActive = (path: Url) => pathname === path;
+  const isActive = (path: string) => pathname === path;
   const isDark = resolvedTheme === "dark";
 
   const handleSignOut = async () => {
@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
       {/* Logo */}
       <Link
         href="/home"
-        className="ml-4 text-lg md:text-3xl font-bold hover:text-gray-400"
+        className="ml-4 text-lg md:text-3xl font-bold !text-slate-100 !no-underline hover:!text-gray-400"
       >
         unstuck duck
       </Link>
@@ -51,10 +51,11 @@ const Navbar: React.FC = () => {
           <li key={item.id}>
             <Link
               href={item.href}
-              className={
-                `${isActive(item.href) ? "text-spotify-green" : ""}` +
-                " hover:text-gray-600"
-              }
+              className={`${
+                isActive(item.href)
+                  ? "!text-gray-600 visited:!text-spotify-green"
+                  : "!text-slate-100 visited:!text-slate-100"
+              } !no-underline hover:!text-gray-600`}
             >
               {item.label}
             </Link>
