@@ -42,6 +42,9 @@ export default function Duck() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   function now() {
     return new Date().toLocaleTimeString([], {
@@ -61,6 +64,11 @@ export default function Duck() {
       },
     ]);
   }
+
+  function handleTranscription(text: string) {
+    setChat(text);
+  }
+
 
   // ── 1. Start session ──
   async function handleStartSession(e: React.SubmitEvent) {
@@ -173,9 +181,9 @@ export default function Duck() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setTeachingScore(data.finalTeachingScore);
-      setFinalAssessment(teachingScore !== null ? `Your final teaching score is ${teachingScore}/100.` : "Session ended.");
+      setFinalAssessment(data.finalAssessment);
       setStatus("ended");
-      addMessage("duck", "Session ended! Here's your final assessment.");
+      addMessage("duck", data.message);
       console.log("STATUS:", status, "FINAL:", finalAssessment)
     } catch (err) {
       console.error("Failed to end session:", err);
