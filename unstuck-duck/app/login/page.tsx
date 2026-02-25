@@ -315,15 +315,13 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* Divider */}
-            <div className="relative text-center my-6">
+            
+            {/* <div className="relative text-center my-6">
               <div className="absolute top-1/2 left-0 right-0 h-px bg-white/10" />
               <span className="relative inline-block px-4 bg-transparent text-xs text-neutral-600 z-10">
                 or continue with
               </span>
             </div>
-
-            {/* Social buttons */}
             <div className="flex gap-3">
               {[
                 {
@@ -371,8 +369,8 @@ export default function LoginPage() {
                   {label}
                 </button>
               ))}
-            </div>
-          </div>
+            </div> */}
+          </div> 
 
           {/* Footer note */}
           <p className="text-center mt-6 text-xs text-neutral-600 leading-relaxed">
