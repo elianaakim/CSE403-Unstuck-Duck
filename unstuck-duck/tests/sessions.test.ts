@@ -1,105 +1,119 @@
 import { expect } from "chai";
-import { describe, it, beforeEach } from "mocha";
-import request from "supertest";
-import express from "express";
+import { describe, it } from "mocha";
 
-// Create a simplified test version of the router
-const createTestApp = () => {
-  const app = express();
-  app.use(express.json());
+// Mock NextRequest for testing
+class MockNextRequest {
+  private bodyText: string;
 
-  // Simple in-memory session storage
-  const sessions = new Map();
-
-  // Routes
-  app.post("/api/sessions/start", async (req, res) => {
-    try {
-      const { topic } = req.body;
-
-      if (!topic || typeof topic !== "string" || topic.trim().length === 0) {
-        return res.status(400).json({ error: "Valid topic is required" });
-      }
-
-      const sessionId = `test_${Date.now()}`;
-      const firstQuestion = `Hi! Can you teach me about ${topic}?`;
-
-      const session = {
-        sessionId,
-        topic: topic.trim(),
-        conversationHistory: [{ role: "assistant", content: firstQuestion }],
-        status: "active",
-        teachingScore: 0,
-      };
-
-      sessions.set(sessionId, session);
-
-      res.json({
-        sessionId,
-        duckQuestion: firstQuestion,
-        topic: session.topic,
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to start session" });
+  constructor(
+    public url: string,
+    options: {
+      method: string;
+      body: string;
+      headers: Record<string, string>;
     }
-  });
+  ) {
+    this.bodyText = options.body;
+  }
 
-  app.post("/api/sessions/end", (req, res) => {
-    try {
-      const { sessionId } = req.body;
-
-      if (!sessionId) {
-        return res.status(400).json({ error: "sessionId is required" });
-      }
-
-      const session = sessions.get(sessionId);
-      if (!session) {
-        return res.status(404).json({ error: "Session not found" });
-      }
-
-      session.status = "completed";
-
-      res.json({
-        sessionId,
-        finalTeachingScore: session.teachingScore,
-        status: "completed",
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to end session" });
-    }
-  });
-
-  return { app, sessions };
-};
+  async json() {
+    return JSON.parse(this.bodyText);
+  }
+}
 
 describe("API Routes", () => {
-  let testApp: any;
-  let sessions: Map<string, any>;
-
-  beforeEach(() => {
-    const { app, sessions: appSessions } = createTestApp();
-    testApp = app;
-    sessions = appSessions;
-  });
-
   describe("POST /api/sessions/end", () => {
-    it("should end a session and return final score", async () => {
-      const startResponse = await request(testApp)
-        .post("/api/sessions/start")
-        .send({ topic: "history" });
+    let startPOST: any;
+    let endPOST: any;
 
-      const sessionId = startResponse.body.sessionId;
+    before(async () => {
+      ({ POST: endPOST } = await import("../app/api/sessions/end/route.js"));
+      ({ POST: startPOST } =
+        await import("../app/api/sessions/start/route.js"));
+    });
+    it("should end a session and return final score", async function () {
+      this.timeout(15000);
+      const request1 = new MockNextRequest(
+        "http://localhost:3000/api/sessions/start",
+        {
+          method: "POST",
+          body: JSON.stringify({ topic: "binary search trees" }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ) as any;
 
-      const response = await request(testApp)
-        .post("/api/sessions/end")
-        .send({ sessionId })
-        .expect(200);
+      const response1 = await startPOST(request1);
+      expect(response1.status).to.equal(200);
 
-      expect(response.body).to.have.property("finalTeachingScore");
-      expect(response.body).to.have.property("status", "completed");
+      const text1 = await response1.text();
+      const body1 = JSON.parse(text1);
+      const sessionId = body1.sessionId;
 
-      // Verify session status was updated
-      const session = sessions.get(sessionId);
-      expect(session.status).to.equal("completed");
+      const request2 = new MockNextRequest(
+        "http://localhost:3000/api/sessions/end",
+        {
+          method: "POST",
+          body: JSON.stringify({ sessionId }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ) as any;
+
+      const response2 = await endPOST(request2);
+      expect(response2.status).to.equal(200);
+
+      const text2 = await response2.text();
+      const body2 = JSON.parse(text2);
+
+      // Check for properties that are actually returned
+      expect(body2).to.have.property("sessionId", sessionId);
+      expect(body2).to.have.property("finalTeachingScore");
+      expect(body2).to.have.property("duration");
+      expect(body2).to.have.property("topic", "binary search trees");
+      expect(body2).to.have.property("startTime");
+      expect(body2).to.have.property("endTime");
+      expect(body2).to.have.property("evaluationCount");
+
+      const requestNoID = new MockNextRequest(
+        "http://localhost:3000/api/sessions/end",
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ) as any;
+
+      const responseNoID = await endPOST(requestNoID);
+
+      expect(responseNoID.status).to.equal(400);
+
+      const bodyNoID = await responseNoID.json();
+      expect(bodyNoID).to.have.property("error");
+      expect(bodyNoID.error).to.equal("sessionId is required");
+
+      const requestBadID = new MockNextRequest(
+        "http://localhost:3000/api/sessions/end",
+        {
+          method: "POST",
+          body: JSON.stringify({ sessionId: "not_a_valid_session_id" }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ) as any;
+
+      const responseBadID = await endPOST(requestBadID);
+
+      expect(responseBadID.status).to.equal(404);
+
+      const bodyBadID = await responseBadID.json();
+      expect(bodyBadID).to.have.property("error");
+      expect(bodyBadID.error).to.equal("Session not found");
     });
   });
 });
