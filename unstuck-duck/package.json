@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@tailwindcss/postcss": "^4",
     "@types/chai": "^5.2.3",
     "@types/cors": "^2.8.19",
@@ -8,6 +9,7 @@
     "@types/fluent-ffmpeg": "^2.1.28",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.2.2",
+    "@types/proxyquire": "^1.3.31",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sinon": "^21.0.0",
@@ -18,10 +20,13 @@
     "eslint-config-next": "16.1.6",
     "mocha": "^11.7.5",
     "nodemon": "^3.1.11",
+    "nyc": "^17.1.0",
+    "proxyquire": "^2.1.3",
     "sinon": "^21.0.1",
     "supertest": "^7.2.2",
     "tailwindcss": "^4.1.18",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   },
   "dependencies": {
@@ -52,7 +57,26 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "mocha --require ts-node/register --extensions ts \"backend/src/tests/**/*.ts\"",
+    "test": "mocha --require tsx --extensions ts tests/**/*.ts",
+    "test:coverage": "nyc mocha --require tsx --extensions ts tests/**/*.ts",
+    "test:ci": "npx mocha --require tsx --extensions ts tests/ci/*.ts",
     "backend": "ts-node backend/src/index.ts"
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "include": [
+      "app/**/*.ts",
+      "app/**/*.tsx",
+      "lib/**/*.ts"
+    ],
+    "exclude": [
+      "tests/**/*.ts",
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "all": true
   }
 }

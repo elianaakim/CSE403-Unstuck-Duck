@@ -29,7 +29,9 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "**/*.ts",
-    "**/*.tsx"
-, "tailwind.config.js"  ],
+    "**/*.tsx",
+    "tailwind.config.js",
+    "tsconfig.test.json"
+  ],
   "exclude": ["node_modules"]
 }
