@@ -3,7 +3,7 @@
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { clientSupabase } from "../../backend/src/supabase/supabase";
+import { clientSupabase } from "@/supabase/supabase";
 import ProtectedRoute from "@/Components/ProtectedRoute";
 
 

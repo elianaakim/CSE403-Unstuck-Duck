@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/backend/src/supabase/authcontext'; // Adjust path
+import { useAuth } from '@/supabase/authcontext'; // Adjust path
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

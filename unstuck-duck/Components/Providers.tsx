@@ -1,7 +1,7 @@
 "use client";
 
 import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "../backend/src/supabase/authcontext"; 
+import { AuthProvider } from "@/supabase/authcontext"; 
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (

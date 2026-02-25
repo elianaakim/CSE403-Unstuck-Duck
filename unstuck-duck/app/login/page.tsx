@@ -2,8 +2,7 @@
 
 import { useState, useEffect, SubmitEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "../../backend/src/supabase/authcontext";
+import { useAuth } from "@/supabase/authcontext";
 import Image from 'next/image';
 
 export default function LoginPage() {

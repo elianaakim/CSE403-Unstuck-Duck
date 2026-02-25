@@ -5,7 +5,7 @@ import Image from "next/image";
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useAuth } from "@/backend/src/supabase/authcontext";
+import { useAuth } from "@/supabase/authcontext"; 
 import { Url } from "next/dist/shared/lib/router/router";
 
 const navItems = [

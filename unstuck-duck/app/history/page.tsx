@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { clientSupabase } from "@/backend/src/supabase/supabase";
+import { clientSupabase } from "@/supabase/supabase";
 import ProtectedRoute from "@/Components/ProtectedRoute";
 import Image from "next/image";
 
