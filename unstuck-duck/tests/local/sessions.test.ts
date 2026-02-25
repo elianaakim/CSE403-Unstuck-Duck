@@ -21,15 +21,15 @@ class MockNextRequest {
   }
 }
 
-describe("API Routes", () => {
+describe("Testing End Session Route", () => {
   describe("POST /api/sessions/end", () => {
     let startPOST: any;
     let endPOST: any;
 
     before(async () => {
-      ({ POST: endPOST } = await import("../app/api/sessions/end/route.js"));
+      ({ POST: endPOST } = await import("../../app/api/sessions/end/route.js"));
       ({ POST: startPOST } =
-        await import("../app/api/sessions/start/route.js"));
+        await import("../../app/api/sessions/start/route.js"));
     });
     it("should end a session and return final score", async function () {
       this.timeout(15000);

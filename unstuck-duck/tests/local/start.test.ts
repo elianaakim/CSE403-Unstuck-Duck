@@ -21,12 +21,12 @@ class MockNextRequest {
   }
 }
 
-describe("API Routes", () => {
+describe("Testing Start Session Route", () => {
   describe("POST /api/sessions/start", () => {
     let POST: any;
 
     before(async () => {
-      const routeModule = await import("../app/api/sessions/start/route.js");
+      const routeModule = await import("../../app/api/sessions/start/route.js");
       POST = routeModule.POST;
     });
 
