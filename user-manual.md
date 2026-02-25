@@ -72,6 +72,9 @@ http://localhost:11434
 1. Press end session button to end the current session
 
 ### The Lake (WIP)
+1. You can choose the topic that you want to learn and hit join.
+2. Make sure your pop-up is not blocked so that your Zoom pop-up window can be shown.
+3. Join the Zoom meeting. 
 
 ### History page
 
