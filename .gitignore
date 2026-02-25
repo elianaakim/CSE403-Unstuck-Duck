@@ -60,7 +60,7 @@ Thumbs.db
 */.env.local
 unstuck-duck/.env.local
 .env.local
-.env
+unstuck-duck/.env
 
 .zoom-rooms.json
 .env
