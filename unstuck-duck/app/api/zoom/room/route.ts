@@ -1,3 +1,6 @@
+// This route handles topic-based Zoom room creation and reuse.
+// Room info is stored in Supabase for persistence and sharing.
+// If a room for the topic exists and is fresh, it is reused; otherwise, a new room is created.
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
@@ -18,6 +21,8 @@ type ZoomRoomRow = {
   created_at: string;
 };
 
+// POST: Create or reuse a Zoom room for a given topic.
+// Returns join_url, meeting_id, password, and reused flag.
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { topic?: string };
@@ -30,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1️⃣ Check for existing room
+    // 1. Check for existing room
     const { data: existing, error: selectErr } = await supabase
       .from("zoom_rooms")
       .select("topic, meeting_id, join_url, password, created_at")
@@ -56,7 +61,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2️⃣ Get Zoom access token
+    // 2. Get Zoom access token
     const tokenResponse = await axios.post(
       "https://zoom.us/oauth/token",
       new URLSearchParams({
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     const accessToken = tokenResponse.data.access_token;
 
-    // 3️⃣ Create new Zoom meeting
+    // 3. Create new Zoom meeting
     const zoomResponse = await axios.post(
       "https://api.zoom.us/v2/users/me/meetings",
       {
@@ -107,7 +112,7 @@ export async function POST(request: NextRequest) {
       ? String(zoomResponse.data.password)
       : null;
 
-    // 4️⃣ Store in Supabase (topic must be UNIQUE)
+    // 4, Store in Supabase (topic must be UNIQUE)
     const { error: upsertErr } = await supabase.from("zoom_rooms").upsert(
       {
         topic,

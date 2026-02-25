@@ -1,3 +1,6 @@
+// This route creates a new Zoom meeting directly, without topic reuse or persistent storage.
+// Use this only if you need to create meetings that are not tied to a topic or Supabase.
+// For topic-based persistent rooms, see zoom/room/route.ts.
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 

@@ -29,7 +29,9 @@ export default function Lake() {
   const [meetingNumber, setMeetingNumber] = useState("");
   const [passcode, setPasscode] = useState("");
   const [userName, setUserName] = useState("");
-  const [status, setStatus] = useState<"idle" | "joining" | "joined" | "creating">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "joining" | "joined" | "creating"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
   const [createdMeetingId, setCreatedMeetingId] = useState<string | null>(null);
 
@@ -204,21 +206,24 @@ export default function Lake() {
   return (
     <div className="flex min-h-screen font-sans transition-colors duration-300 bg-stone-50 dark:bg-neutral-950">
       <main className="flex w-full max-w-5xl mx-auto gap-8 px-8 py-10">
-
         {/* ── Right: Content ── */}
         <div className="flex-1 flex flex-col min-h-[calc(100vh-5rem)]">
-
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-stone-900 dark:text-white mb-2">The Lake</h1>
+            <h1 className="text-3xl font-bold text-stone-900 dark:text-white mb-2">
+              The Lake
+            </h1>
             <p className="text-sm text-stone-500 dark:text-neutral-400">
-              Pick a topic to start a Zoom session, or join/create your own meeting below.
+              Pick a topic to start a Zoom session, or join/create your own
+              meeting below.
             </p>
           </div>
 
           {/* ── Topic Cards ── */}
           <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-4 text-stone-900 dark:text-white">Topic Rooms</h2>
+            <h2 className="text-lg font-semibold mb-4 text-stone-900 dark:text-white">
+              Topic Rooms
+            </h2>
             <div className="flex flex-col gap-3">
               {PLACEHOLDER_TOPICS.map((topic) => (
                 <div
@@ -258,7 +263,9 @@ export default function Lake() {
           <section className="rounded-2xl border p-6 transition-colors duration-300 bg-white dark:bg-white/5 border-stone-200 dark:border-white/10">
             <div className="flex flex-col gap-4">
               <label className="flex flex-col gap-2 text-sm">
-                <span className="font-semibold text-stone-700 dark:text-neutral-300">Meeting ID</span>
+                <span className="font-semibold text-stone-700 dark:text-neutral-300">
+                  Meeting ID
+                </span>
                 <input
                   className="px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2
                     bg-white dark:bg-white/5 border-stone-200 dark:border-white/10
@@ -271,7 +278,9 @@ export default function Lake() {
               </label>
 
               <label className="flex flex-col gap-2 text-sm">
-                <span className="font-semibold text-stone-700 dark:text-neutral-300">Password (optional)</span>
+                <span className="font-semibold text-stone-700 dark:text-neutral-300">
+                  Password (optional)
+                </span>
                 <input
                   className="px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2
                     bg-white dark:bg-white/5 border-stone-200 dark:border-white/10
@@ -284,7 +293,9 @@ export default function Lake() {
               </label>
 
               <label className="flex flex-col gap-2 text-sm">
-                <span className="font-semibold text-stone-700 dark:text-neutral-300">Your name</span>
+                <span className="font-semibold text-stone-700 dark:text-neutral-300">
+                  Your name
+                </span>
                 <input
                   className="px-4 py-3 rounded-xl text-sm border-2 transition-colors duration-200 focus:outline-none focus:ring-2
                     bg-white dark:bg-white/5 border-stone-200 dark:border-white/10
@@ -297,9 +308,11 @@ export default function Lake() {
               </label>
 
               {error && (
-                <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">
+                  {error}
+                </p>
               )}
-              
+
               {createdMeetingId && (
                 <p className="text-sm text-emerald-600 dark:text-emerald-400">
                   Meeting created: {createdMeetingId}
