@@ -15,6 +15,8 @@ unstuck-duck/.next
 
 # testing
 /coverage
+unstuck-duck/coverage
+/unstuck-duck/.nyc_output/*
 
 # next.js
 /.next/
@@ -57,8 +59,17 @@ Thumbs.db
 *.swo
 
 # Environment variables
+*/.env.local
+unstuck-duck/.env.local
+.env.local
+unstuck-duck/.env
+
+.zoom-rooms.json
 .env
 .env.local
+unstuck-duck/.env.local
+*/.env
+*/.env.local
 
 .zoom-rooms.json
 # Whisper models

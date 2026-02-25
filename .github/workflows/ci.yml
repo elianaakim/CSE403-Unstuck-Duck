@@ -18,12 +18,12 @@ jobs:
         with:
           node-version: 23
           cache: npm
-          cache-dependency-path: './unstuck-duck/package-lock.json'
+          cache-dependency-path: "./unstuck-duck/package-lock.json"
 
       - name: Install dependencies
         working-directory: ./unstuck-duck
         run: npm ci
 
-      - name: Run tests
+      - name: Run ci tests
         working-directory: ./unstuck-duck
-        run: npm test
+        run: npm run test:coverage

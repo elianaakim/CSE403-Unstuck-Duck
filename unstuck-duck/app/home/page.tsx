@@ -24,12 +24,12 @@ const SLIDES = [
     accent: "#38bdf8",
   },
   {
-    id: "courses",
-    label: "Courses",
-    href: "/classroom",
-    src: "/courses.png",
-    alt: "Courses Image",
-    tagline: "Structured lessons, duck-approved",
+    id: "history",
+    label: "History",
+    href: "/history",
+    src: "/hist.png",
+    alt: "History Image",
+    tagline: "All your prior learning in one place",
     accent: "#a78bfa",
   },
 ];
@@ -38,7 +38,7 @@ export default function Home() {
   const [selected, setSelected] = useState(0);
 
   function prev() {
-    setSelected((s) => ((s - 1) + SLIDES.length) % SLIDES.length);
+    setSelected((s) => (s - 1 + SLIDES.length) % SLIDES.length);
   }
 
   function next() {
@@ -46,12 +46,11 @@ export default function Home() {
   }
 
   const current = SLIDES[selected];
-  const leftSlide = SLIDES[((selected - 1) + SLIDES.length) % SLIDES.length];
+  const leftSlide = SLIDES[(selected - 1 + SLIDES.length) % SLIDES.length];
   const rightSlide = SLIDES[(selected + 1) % SLIDES.length];
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-neutral-950 font-sans overflow-hidden transition-colors duration-300">
-
       {/* ── Hero text ── */}
       <div className="text-center pt-16 pb-8 px-4">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400 dark:text-neutral-500 mb-3 transition-colors duration-300">
@@ -73,10 +72,8 @@ export default function Home() {
 
       {/* ── Carousel ── */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
-
         {/* Track */}
         <div className="relative flex items-center justify-center w-full max-w-3xl gap-6 mb-10">
-
           {/* Left ghost card */}
           <button
             onClick={prev}
@@ -182,8 +179,18 @@ export default function Home() {
           © {new Date().getFullYear()} Unstuck Duck
         </span>
         <div className="flex gap-5">
-          <Link href="#" className="text-xs text-stone-400 dark:text-neutral-600 hover:text-stone-700 dark:hover:text-neutral-300 transition-colors">Privacy</Link>
-          <Link href="#" className="text-xs text-stone-400 dark:text-neutral-600 hover:text-stone-700 dark:hover:text-neutral-300 transition-colors">Terms</Link>
+          <Link
+            href="#"
+            className="text-xs text-stone-400 dark:text-neutral-600 hover:text-stone-700 dark:hover:text-neutral-300 transition-colors"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="#"
+            className="text-xs text-stone-400 dark:text-neutral-600 hover:text-stone-700 dark:hover:text-neutral-300 transition-colors"
+          >
+            Terms
+          </Link>
         </div>
       </footer>
     </div>

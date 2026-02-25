@@ -1,16 +1,14 @@
 import { ollamaClient } from "../../app/lib/ollama";
 
-
-
 function extractAnswer(content: string): string {
   // Remove thinking tags if present
-  const withoutThink = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-  
+  const withoutThink = content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
   // If we got something after removing think tags, use it
   if (withoutThink) {
     return withoutThink;
   }
-  
+
   // Otherwise return original (for models that don't use think tags)
   return content.trim();
 }
@@ -87,11 +85,11 @@ export async function generateFollowUpQuestion(
     });
 
     const rawContent = response.message.content || "";
-    console.log("Raw LLM response:", rawContent);
-    
+    // console.log("Raw LLM response:", rawContent);
+
     const cleanedAnswer = extractAnswer(rawContent);
-    console.log("Cleaned answer:", cleanedAnswer);
-    
+    // console.log("Cleaned answer:", cleanedAnswer);
+
     return cleanedAnswer || "That's interesting! Can you tell me more?";
   } catch (error) {
     console.error("Error generating follow-up question:", error);
