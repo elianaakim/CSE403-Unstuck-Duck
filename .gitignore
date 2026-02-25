@@ -15,6 +15,7 @@ unstuck-duck/.next
 
 # testing
 /coverage
+unstuck-duck/coverage
 /unstuck-duck/.nyc_output/*
 
 # next.js
