@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zoom Meeting</title>
+  <!-- Zoom SDK CSS -->
+  <link rel="stylesheet" href="https://source.zoom.us/3.13.2/css/bootstrap.css" />
+  <link rel="stylesheet" href="https://source.zoom.us/3.13.2/css/react-select.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #fff;
+    }
+    #waiting {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #64748b;
+      font-size: 14px;
+      gap: 8px;
+    }
+    #waiting-error {
+      color: #dc2626;
+      font-size: 13px;
+      max-width: 400px;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="waiting">
+    <span>Connecting to Zoom&hellip;</span>
+    <span id="waiting-error"></span>
+  </div>
+  <div id="zmmtg-root"></div>
+
+  <!-- Zoom SDK vendor deps (includes its own React 18, avoiding conflicts) -->
+  <script src="https://source.zoom.us/3.13.2/lib/vendor/react.min.js"></script>
+  <script src="https://source.zoom.us/3.13.2/lib/vendor/react-dom.min.js"></script>
+  <script src="https://source.zoom.us/3.13.2/lib/vendor/redux.min.js"></script>
+  <script src="https://source.zoom.us/3.13.2/lib/vendor/redux-thunk.min.js"></script>
+  <script src="https://source.zoom.us/3.13.2/lib/vendor/lodash.min.js"></script>
+
+  <!-- Zoom Meeting SDK (root-level CDN path) -->
+  <script src="https://source.zoom.us/zoom-meeting-3.13.2.min.js"></script>
+
+  <script>
+    var joined = false;
+
+    /** Send a status event to the parent window. */
+    function notify(status, message) {
+      console.log("[zoom-frame] notify:", status, message || "");
+      window.parent.postMessage(
+        { type: "zoom-status", status: status, message: message || "" },
+        "*"
+      );
+    }
+
+    /** Extract a human-readable message from a Zoom SDK error object. */
+    function extractError(e) {
+      if (!e) return "Unknown error";
+      // Zoom SDK errors can have many shapes
+      if (typeof e === "string") return e;
+      return e.reason || e.message || e.errorMessage
+        || (e.errorCode ? "Error code " + e.errorCode : "")
+        || JSON.stringify(e);
+    }
+
+    /** Show an error inside the iframe itself (visible in the overlay). */
+    function showError(msg) {
+      var el = document.getElementById("waiting-error");
+      if (el) {
+        el.textContent = msg;
+        el.style.display = "block";
+      }
+      var w = document.getElementById("waiting");
+      if (w) w.style.display = "flex";
+    }
+
+    /** Initialise the SDK and join the meeting with the given credentials. */
+    function startMeeting(params) {
+      console.log("[zoom-frame] startMeeting called, meetingNumber:", params.meetingNumber);
+
+      if (typeof ZoomMtg === "undefined") {
+        var msg = "ZoomMtg global not found – SDK script may have failed to load.";
+        console.error("[zoom-frame]", msg);
+        showError(msg);
+        notify("error", msg);
+        return;
+      }
+
+      ZoomMtg.setZoomJSLib("https://source.zoom.us/3.13.2/lib", "/av");
+      ZoomMtg.preLoadWasm();
+      ZoomMtg.prepareWebSDK();
+
+      console.log("[zoom-frame] calling ZoomMtg.init ...");
+
+      ZoomMtg.init({
+        leaveUrl: window.location.href,
+        disablePreview: true,
+        success: function () {
+          console.log("[zoom-frame] ZoomMtg.init SUCCESS – calling join ...");
+          var el = document.getElementById("waiting");
+          if (el) el.style.display = "none";
+
+          ZoomMtg.join({
+            signature: params.signature,
+            sdkKey: params.sdkKey,
+            meetingNumber: params.meetingNumber,
+            userName: params.userName,
+            passWord: params.passWord || "",
+            success: function (res) {
+              console.log("[zoom-frame] ZoomMtg.join SUCCESS", res);
+              notify("joined");
+            },
+            error: function (e) {
+              var msg = extractError(e);
+              console.error("[zoom-frame] ZoomMtg.join ERROR", e);
+              showError("Join failed: " + msg);
+              notify("error", "Join failed: " + msg);
+            },
+          });
+        },
+        error: function (e) {
+          var msg = extractError(e);
+          console.error("[zoom-frame] ZoomMtg.init ERROR", e);
+          showError("Init failed: " + msg);
+          notify("error", "Init failed: " + msg);
+        },
+      });
+    }
+
+    /* Listen for credentials from the parent frame. */
+    window.addEventListener("message", function (event) {
+      if (event.data && event.data.type === "join-meeting" && !joined) {
+        console.log("[zoom-frame] received join-meeting message from parent");
+        joined = true;
+        startMeeting(event.data);
+      }
+    });
+
+    /* Tell the parent this frame is ready to receive credentials. */
+    console.log("[zoom-frame] frame loaded, sending ready");
+    notify("ready");
+  </script>
+</body>
+</html>

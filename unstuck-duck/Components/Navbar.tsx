@@ -5,8 +5,6 @@ import Image from "next/image";
 import React from "react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Url } from "next/dist/shared/lib/router/router";
-
 
 const navItems = [
   { id: "duck", label: "The Duck", href: "/duck" },
@@ -14,11 +12,11 @@ const navItems = [
   { id: "classroom", label: "Classroom", href: "/classroom" },
 ];
 
-const Navbar: React.FunctionComponent<INavbarProps> = () => {
+const Navbar = () => {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
 
-  const isActive = (path: Url) => pathname === path;
+  const isActive = (path: string) => pathname === path;
   const isDark = resolvedTheme === "dark";
 
   return (
@@ -26,7 +24,7 @@ const Navbar: React.FunctionComponent<INavbarProps> = () => {
       {/* Logo */}
       <Link
         href="/home"
-        className="ml-4 text-lg md:text-3xl font-bold hover:text-gray-400"
+        className="ml-4 text-lg md:text-3xl font-bold !text-slate-100 !no-underline hover:!text-gray-400"
       >
         unstuck duck
       </Link>
@@ -37,10 +35,11 @@ const Navbar: React.FunctionComponent<INavbarProps> = () => {
           <li key={item.id}>
             <Link
               href={item.href}
-              className={
-                `${isActive(item.href) ? "text-spotify-green" : ""}` +
-                " hover:text-gray-600"
-              }
+              className={`${
+                isActive(item.href)
+                  ? "!text-gray-600 visited:!text-spotify-green"
+                  : "!text-slate-100 visited:!text-slate-100"
+              } !no-underline hover:!text-gray-600`}
             >
               {item.label}
             </Link>

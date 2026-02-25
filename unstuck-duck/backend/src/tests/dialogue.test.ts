@@ -64,8 +64,6 @@ describe("Duck Teaching Assistant", () => {
       };
 
       mockSessions.set(sessionId, session);
-
-      expect(mockSessions.has(sessionId)).to.be.true;
       expect(mockSessions.get(sessionId).topic).to.equal("programming");
       expect(mockSessions.get(sessionId).status).to.equal("active");
     });
