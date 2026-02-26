@@ -1,2 +1,2 @@
-import { POST } from "../../../backend/src/supabase/login/route";
+import { POST } from "@/supabase/login/route";
 export { POST };
