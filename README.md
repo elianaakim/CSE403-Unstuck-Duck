@@ -63,12 +63,12 @@ http://localhost:11434
 
 The GitHub tag for this milestone is:
 ```bash
-v0.2.0-gamma
+v0.3.0-gamma
 ```
 
 To check out the exact commit set for this release:
 ```bash
-git checkout v0.2.0-gamma
+git checkout v0.3.0-gamma
 ```
 
 # Running Tests
