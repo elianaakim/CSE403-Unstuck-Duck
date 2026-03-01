@@ -57,10 +57,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "mocha --require tsx --extensions ts tests/**/*.ts",
-    "test:coverage": "nyc mocha --require tsx --extensions ts tests/**/*.ts",
-    "test:ci": "npx mocha --require tsx --extensions ts tests/ci/*.ts",
-    "test:new": "nyc mocha --require tsx --extensions ts tests/*.test.ts",
+    "test": "nyc mocha --require tsx --extensions ts tests/*.test.ts",
+    "test:local": "nyc mocha --require tsx --extensions ts tests/local/*.test.ts",
     "backend": "ts-node backend/src/index.ts"
   },
   "nyc": {
