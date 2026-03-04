@@ -26,4 +26,4 @@ jobs:
 
       - name: Run ci tests
         working-directory: ./unstuck-duck
-        run: npm run test:coverage
+        run: npm run test
