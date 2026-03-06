@@ -1,113 +1,151 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
-import { useAuth } from "@/supabase/authcontext"; 
-import { Url } from "next/dist/shared/lib/router/router";
+import { useAuth } from "@/supabase/authcontext";
 
 const navItems = [
   { id: "duck", label: "The Duck", href: "/duck" },
   { id: "lake", label: "The Lake", href: "/lake" },
-  { id: "History", label: "History", href: "/history" },
+  { id: "history", label: "History", href: "/history" },
 ];
 
 const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { resolvedTheme, setTheme } = useTheme();
   const { signOut } = useAuth();
 
   const isActive = (path: string) => pathname === path;
-  const isDark = resolvedTheme === "dark";
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push('/login');
+      router.push("/login");
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
     }
   };
 
   return (
-    <nav
-      suppressHydrationWarning
-      className="pb-4 pt-2 flex justify-between items-center"
-    >
-      {/* Logo */}
-      <Link
-        href="/home"
-        className="ml-4 text-lg md:text-3xl font-bold !text-slate-100 !no-underline hover:!text-gray-400"
+    <>
+      <style>{`
+        .nav-link {
+          font-family: var(--font-body);
+          font-size: 13px;
+          font-weight: 400;
+          color: var(--muted);
+          text-decoration: none;
+          letter-spacing: 0.03em;
+          padding: 4px 0;
+          position: relative;
+          transition: color 0.15s;
+        }
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 0;
+          height: 1px;
+          background: var(--acid);
+          transition: width 0.2s cubic-bezier(0.22,1,0.36,1);
+        }
+        .nav-link:hover { color: var(--white); }
+        .nav-link:hover::after { width: 100%; }
+        .nav-link.active {
+          color: var(--white);
+        }
+        .nav-link.active::after { width: 100%; background: var(--acid); }
+
+        .nav-signout {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--muted);
+          background: none;
+          border: 1px solid var(--border);
+          padding: 6px 14px;
+          cursor: pointer;
+          transition: all 0.15s;
+          border-radius: 0;
+        }
+        .nav-signout:hover {
+          color: var(--white);
+          border-color: var(--border2);
+          background: rgba(255,255,255,0.04);
+        }
+      `}</style>
+
+      <nav
+        suppressHydrationWarning
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          height: 56,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 32px",
+          background: "rgba(8,8,8,0.85)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderBottom: "1px solid var(--border)",
+        }}
       >
-        unstuck duck
-      </Link>
-
-      {/* Nav links */}
-      <ul className="flex justify-end items-center gap-4">
-        {navItems.map((item) => (
-          <li key={item.id}>
-            <Link
-              href={item.href}
-              className={`${
-                isActive(item.href)
-                  ? "!text-gray-600 visited:!text-spotify-green"
-                  : "!text-slate-100 visited:!text-slate-100"
-              } !no-underline hover:!text-gray-600`}
-            >
-              {item.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {/* Right side: theme toggle + avatar */}
-      <div className="mr-4 flex items-center gap-3">
-        {/* Light/dark mode toggle, disabled for now
-        <button
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          className={`
-            relative w-14 h-7 rounded-full transition-colors duration-300
-            focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400
-            ${isDark ? "bg-neutral-700" : "bg-stone-200"}
-          `}
+        {/* Logo */}
+        <Link
+          href="/home"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 22,
+            letterSpacing: "0.05em",
+            color: "var(--white)",
+            textDecoration: "none",
+            lineHeight: 1,
+          }}
         >
-          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-xs pointer-events-none select-none">
-            🌙
-          </span>
-          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs pointer-events-none select-none">
-            ☀️
-          </span>
-          <span
-            className={`
-              absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-all duration-300
-              ${
-                isDark
-                  ? "left-0.5 bg-neutral-900 border border-white/20"
-                  : "left-[calc(100%-1.625rem)] bg-white border border-stone-300"
-              }
-            `}
-          />
-        </button> */}
+          unstuck duck
+          <span style={{ color: "var(--acid)" }}>.</span>
+        </Link>
 
-        {/* Globe / avatar */}
-        <button 
+        {/* Nav links */}
+        <ul
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 28,
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+          }}
+        >
+          {navItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                href={item.href}
+                className={`nav-link${isActive(item.href) ? " active" : ""}`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        {/* Sign out */}
+        <button
+          className="nav-signout"
           onClick={handleSignOut}
-          className="cursor-pointer hover:opacity-70 transition-opacity"
           aria-label="Sign out"
         >
-          <Image
-            src="/globe.svg"
-            alt="Sign out"
-            width={40}
-            height={40}
-          />
+          Sign out ↗
         </button>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 };
 

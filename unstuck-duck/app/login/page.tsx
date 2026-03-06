@@ -1,40 +1,38 @@
 "use client";
 
-import { useState, useEffect, SubmitEvent } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/supabase/authcontext";
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, signUp, user } = useAuth(); // Get auth functions
+  const { signIn, signUp, user } = useAuth();
 
-  // Check if we should show signup mode from URL
   const [isSignUp, setIsSignUp] = useState(
     searchParams.get("signup") === "true"
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      router.push("/home");
-    }
+    setTimeout(() => setMounted(true), 40);
+  }, []);
+  useEffect(() => {
+    if (user) router.push("/home");
   }, [user, router]);
 
-  const validateEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validatePassword = (password: string) => password.length >= 8;
+  const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const validatePassword = (p: string) => p.length >= 8;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,11 +41,9 @@ export default function LoginPage() {
     if (!email) newErrors.email = "Email is required";
     else if (!validateEmail(email))
       newErrors.email = "Please enter a valid email";
-
     if (!password) newErrors.password = "Password is required";
     else if (isSignUp && !validatePassword(password))
       newErrors.password = "Password must be at least 8 characters";
-
     if (isSignUp) {
       if (!username) newErrors.email = "Username is required";
       if (!firstName) newErrors.email = "First name is required";
@@ -61,384 +57,494 @@ export default function LoginPage() {
 
     setErrors({});
     setIsLoading(true);
-
     try {
       if (isSignUp) {
-        await signUp({
-          username,
-          email,
-          password,
-          firstName,
-          lastName,
-        });
+        await signUp({ username, email, password, firstName, lastName });
       } else {
         await signIn(email, password);
       }
-      // router.push("/home");
-    } catch (error) {
+    } catch (error: any) {
       setErrors({ email: error.message || "Authentication failed" });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // const toggleMode = () => { setIsSignUp(!isSignUp); setErrors({}); setPassword(''); }; // OLD
   const toggleMode = () => {
     setIsSignUp(!isSignUp);
     setErrors({});
     setPassword("");
-    // Reset signup fields
     setUsername("");
     setFirstName("");
     setLastName("");
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-950 font-sans overflow-hidden">
-      {/* ── Main ── */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 relative">
-        {/* Ambient glow blobs */}
-        <div
-          className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, #facc15, transparent 70%)",
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full blur-[100px] opacity-10 pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, #38bdf8, transparent 70%)",
-          }}
-        />
+    <>
+      <style>{`
+        @keyframes l-fadeUp {
+          from { opacity:0; transform:translateY(20px); }
+          to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes l-bob {
+          0%,100% { transform:translateY(0) rotate(-3deg); }
+          50%     { transform:translateY(-10px) rotate(3deg); }
+        }
+        @keyframes l-shake {
+          0%,100% { transform:translateX(0); }
+          25%     { transform:translateX(-4px); }
+          75%     { transform:translateX(4px); }
+        }
+        @keyframes l-spin { to { transform:rotate(360deg); } }
 
-        <div className="relative z-10 w-full max-w-[420px]">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="text-6xl mb-3 inline-block" style={{ animation: 'duckBounce 2s ease-in-out infinite' }}>
-              <Image
-                  src="/duck.png"
-                  alt="Unstuck Duck Logo"
-                  width={50}
-                  height={50}
+        .l-s1 { animation: l-fadeUp 0.5s 0.04s cubic-bezier(0.22,1,0.36,1) both; }
+        .l-s2 { animation: l-fadeUp 0.5s 0.10s cubic-bezier(0.22,1,0.36,1) both; }
+        .l-s3 { animation: l-fadeUp 0.5s 0.16s cubic-bezier(0.22,1,0.36,1) both; }
+        .l-bob { animation: l-bob 2.8s ease-in-out infinite; }
+        .l-shake { animation: l-shake 0.3s ease; }
+        .l-spin { animation: l-spin 0.8s linear infinite; }
+
+        .l-field {
+          width: 100%;
+          background: var(--card);
+          border: 1px solid var(--border2);
+          border-left: 3px solid rgba(200,241,53,0.35);
+          color: var(--white);
+          font-family: var(--font-body);
+          font-size: 14px;
+          padding: 12px 16px;
+          outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          border-radius: 0;
+        }
+        .l-field::placeholder { color: rgba(80,76,68,0.5); }
+        .l-field:focus {
+          border-color: var(--acid);
+          box-shadow: 0 0 0 1px var(--acid);
+        }
+        .l-field:disabled { opacity: 0.4; cursor: not-allowed; }
+        .l-field.error {
+          border-left-color: #ff6b6b;
+          border-color: rgba(255,107,107,0.5);
+        }
+        .l-field.error:focus { border-color: #ff6b6b; box-shadow: 0 0 0 1px #ff6b6b; }
+
+        .l-label {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.25em;
+          text-transform: uppercase;
+          color: var(--muted);
+          margin-bottom: 6px;
+          display: block;
+        }
+
+        .l-toggle-btn {
+          flex: 1;
+          padding: 9px 0;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          border: none;
+          cursor: pointer;
+          transition: all 0.15s;
+          background: transparent;
+        }
+
+        .l-submit {
+          width: 100%;
+          padding: 14px 0;
+          font-family: var(--font-display);
+          font-size: 15px;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          background: var(--acid);
+          color: var(--black);
+          border: none;
+          cursor: pointer;
+          transition: all 0.15s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+        .l-submit:hover:not(:disabled) {
+          background: #d9ff3d;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 0 rgba(200,241,53,0.3);
+        }
+        .l-submit:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+        .l-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+      `}</style>
+
+      <div
+        className="min-h-screen flex flex-col"
+        style={{
+          background: "var(--black)",
+          fontFamily: "var(--font-body)",
+          opacity: mounted ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        {/* Minimal top bar */}
+        <div
+          style={{
+            height: 48,
+            display: "flex",
+            alignItems: "center",
+            padding: "0 32px",
+            borderBottom: "1px solid var(--border)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 18,
+              letterSpacing: "0.05em",
+              color: "var(--white)",
+            }}
+          >
+            unstuck duck<span style={{ color: "var(--acid)" }}>.</span>
+          </span>
+        </div>
+
+        {/* Main centered content */}
+        <div className="flex-1 flex items-center justify-center px-6 py-12">
+          <div className="w-full" style={{ maxWidth: 400 }}>
+            {/* Duck + heading */}
+            <div className="l-s1 text-center mb-8">
+              <div className="l-bob inline-block mb-4">
+                <Image
+                  src="/duck_l.png"
+                  alt="Unstuck Duck"
+                  width={72}
+                  height={72}
                   draggable="false"
                 />
-            </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight mb-1">
-              {isSignUp ? "Create an account" : "Welcome back"}
-            </h1>
-            <p className="text-sm text-neutral-500">
-              {isSignUp
-                ? "Start teaching your duck today"
-                : "Sign in to continue teaching"}
-            </p>
-          </div>
+              </div>
 
-          {/* Card */}
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-            {/* Amber glow inside card */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[60px] opacity-20 pointer-events-none bg-amber-400" />
-
-            {/* Mode Toggle */}
-            <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-1 mb-7">
-              <button
-                type="button"
-                onClick={() => !isSignUp || toggleMode()}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-colors duration-300 relative z-10 ${
-                  !isSignUp ? "text-white" : "text-neutral-500"
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => isSignUp || toggleMode()}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-colors duration-300 relative z-10 ${
-                  isSignUp ? "text-white" : "text-neutral-500"
-                }`}
-              >
-                Sign Up
-              </button>
               <div
-                className={`absolute top-1 left-1 w-[calc(50%-4px)] h-[calc(100%-8px)] bg-white/10 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                  isSignUp ? "translate-x-full" : "translate-x-0"
-                }`}
-              />
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="relative z-10">
-              {/* SIGN-UP FIELDS - ADD THIS ENTIRE SECTION */}
-              {isSignUp && (
-                <>
-                  {/* Username */}
-                  <div className="mb-5">
-                    <label className="block text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-widest">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Choose a username"
-                      disabled={isLoading}
-                      className="w-full px-4 py-3.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/10 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-neutral-600"
-                    />
-                  </div>
-
-                  {/* First & Last Name - side by side */}
-                  <div className="grid grid-cols-2 gap-3 mb-5">
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-widest">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="First"
-                        disabled={isLoading}
-                        className="w-full px-4 py-3.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/10 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-neutral-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-widest">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Last"
-                        disabled={isLoading}
-                        className="w-full px-4 py-3.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/10 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-neutral-600"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Email */}
-              <div className="mb-5">
-                <label
-                  htmlFor="email"
-                  className="block text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-widest"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (errors.email)
-                      setErrors({ ...errors, email: undefined });
-                  }}
-                  placeholder="your.email@example.com"
-                  disabled={isLoading}
-                  className={`w-full px-4 py-3.5 rounded-xl text-sm text-white bg-white/5 border transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-neutral-600 ${
-                    errors.email
-                      ? "border-red-500/60 focus:ring-red-500/20"
-                      : "border-white/10 focus:border-amber-400/60 focus:ring-amber-400/10"
-                  }`}
-                />
-                {errors.email && (
-                  <span
-                    className="block mt-1.5 text-xs text-red-400"
-                    style={{ animation: "shake 0.3s ease" }}
-                  >
-                    {errors.email}
-                  </span>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="mb-5">
-                <label
-                  htmlFor="password"
-                  className="block text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-widest"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password)
-                      setErrors({ ...errors, password: undefined });
-                  }}
-                  placeholder={isSignUp ? "At least 8 characters" : "••••••••"}
-                  disabled={isLoading}
-                  className={`w-full px-4 py-3.5 rounded-xl text-sm text-white bg-white/5 border transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-neutral-600 ${
-                    errors.password
-                      ? "border-red-500/60 focus:ring-red-500/20"
-                      : "border-white/10 focus:border-amber-400/60 focus:ring-amber-400/10"
-                  }`}
-                />
-                {errors.password && (
-                  <span
-                    className="block mt-1.5 text-xs text-red-400"
-                    style={{ animation: "shake 0.3s ease" }}
-                  >
-                    {errors.password}
-                  </span>
-                )}
-              </div>
-
-              {/* Forgot password */}
-              {!isSignUp && (
-                <div className="text-right mb-5">
-                  <a
-                    href="#"
-                    className="text-xs text-neutral-500 hover:text-amber-400 transition-colors duration-200 font-medium"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
-              )}
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3.5 rounded-xl text-sm font-semibold text-neutral-950 transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed relative overflow-hidden group"
                 style={{
-                  backgroundColor: "#facc15",
-                  boxShadow: "0 4px 24px rgba(250, 204, 21, 0.3)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  color: "var(--acid)",
+                  letterSpacing: "0.25em",
+                  textTransform: "uppercase",
+                  marginBottom: 8,
                 }}
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-                {isLoading ? (
-                  <span className="inline-block w-4 h-4 border-2 border-neutral-900/30 border-t-neutral-900 rounded-full animate-spin" />
+                {isSignUp ? "/ Create Account" : "/ Sign In"}
+              </div>
+
+              <h1
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(36px, 6vw, 52px)",
+                  lineHeight: 0.9,
+                  letterSpacing: "0.02em",
+                  color: "var(--white)",
+                }}
+              >
+                {isSignUp ? (
+                  <>
+                    WELCOME
+                    <br />
+                    <span style={{ color: "var(--acid)" }}>ABOARD.</span>
+                  </>
                 ) : (
-                  <span>{isSignUp ? "Create Account" : "Sign In"} →</span>
+                  <>
+                    WELCOME
+                    <br />
+                    <span style={{ color: "var(--acid)" }}>BACK.</span>
+                  </>
                 )}
-              </button>
-            </form>
-
-            
-            {/* <div className="relative text-center my-6">
-              <div className="absolute top-1/2 left-0 right-0 h-px bg-white/10" />
-              <span className="relative inline-block px-4 bg-transparent text-xs text-neutral-600 z-10">
-                or continue with
-              </span>
+              </h1>
             </div>
-            <div className="flex gap-3">
-              {[
-                {
-                  label: "Google",
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="18" height="18">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                  ),
-                },
-                {
-                  label: "GitHub",
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="18" height="18">
-                      <path
-                        fill="currentColor"
-                        d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.137 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"
-                      />
-                    </svg>
-                  ),
-                },
-              ].map(({ label, icon }) => (
-                <button
-                  key={label}
-                  type="button"
-                  disabled={isLoading}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-sm font-semibold text-neutral-300 transition-all duration-200 hover:bg-white/10 hover:border-white/20 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {icon}
-                  {label}
-                </button>
-              ))}
-            </div> */}
-          </div> 
 
-          {/* Footer note */}
-          <p className="text-center mt-6 text-xs text-neutral-600 leading-relaxed">
-            By continuing, you agree to our{" "}
-            <a
-              href="#"
-              className="text-neutral-400 hover:text-amber-400 transition-colors"
+            {/* Card */}
+            <div
+              className="l-s2"
+              style={{
+                background: "var(--card)",
+                border: "1px solid var(--border)",
+                borderTop: "3px solid var(--acid)",
+                padding: "24px 24px 20px",
+              }}
             >
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a
-              href="#"
-              className="text-neutral-400 hover:text-amber-400 transition-colors"
+              {/* Mode toggle */}
+              <div
+                style={{
+                  display: "flex",
+                  border: "1px solid var(--border2)",
+                  marginBottom: 24,
+                  background: "var(--off)",
+                }}
+              >
+                <button
+                  type="button"
+                  className="l-toggle-btn"
+                  onClick={() => isSignUp && toggleMode()}
+                  style={{
+                    color: !isSignUp ? "var(--black)" : "var(--muted)",
+                    background: !isSignUp ? "var(--acid)" : "transparent",
+                  }}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  className="l-toggle-btn"
+                  onClick={() => !isSignUp && toggleMode()}
+                  style={{
+                    color: isSignUp ? "var(--black)" : "var(--muted)",
+                    background: isSignUp ? "var(--acid)" : "transparent",
+                  }}
+                >
+                  Sign Up
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit}>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  {/* Sign up extra fields */}
+                  {isSignUp && (
+                    <>
+                      <div>
+                        <label className="l-label">Username</label>
+                        <input
+                          type="text"
+                          className="l-field"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="choose_a_username"
+                          disabled={isLoading}
+                        />
+                      </div>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 12,
+                        }}
+                      >
+                        <div>
+                          <label className="l-label">First Name</label>
+                          <input
+                            type="text"
+                            className="l-field"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            placeholder="First"
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <div>
+                          <label className="l-label">Last Name</label>
+                          <input
+                            type="text"
+                            className="l-field"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            placeholder="Last"
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Email */}
+                  <div>
+                    <label className="l-label">Email</label>
+                    <input
+                      id="email"
+                      type="email"
+                      className={`l-field${errors.email ? " error" : ""}`}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errors.email)
+                          setErrors({ ...errors, email: undefined });
+                      }}
+                      placeholder="your@email.com"
+                      disabled={isLoading}
+                    />
+                    {errors.email && (
+                      <span
+                        className="l-shake"
+                        style={{
+                          display: "block",
+                          marginTop: 5,
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 10,
+                          color: "#ff6b6b",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        ⚠ {errors.email}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="l-label">Password</label>
+                    <input
+                      id="password"
+                      type="password"
+                      className={`l-field${errors.password ? " error" : ""}`}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (errors.password)
+                          setErrors({ ...errors, password: undefined });
+                      }}
+                      placeholder={isSignUp ? "Min. 8 characters" : "••••••••"}
+                      disabled={isLoading}
+                    />
+                    {errors.password && (
+                      <span
+                        className="l-shake"
+                        style={{
+                          display: "block",
+                          marginTop: 5,
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 10,
+                          color: "#ff6b6b",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        ⚠ {errors.password}
+                      </span>
+                    )}
+                  </div>
+
+
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    className="l-submit"
+                    disabled={isLoading}
+                    style={{ marginTop: 4 }}
+                  >
+                    {isLoading ? (
+                      <span
+                        className="l-spin"
+                        style={{
+                          width: 16,
+                          height: 16,
+                          border: "2px solid rgba(0,0,0,0.2)",
+                          borderTop: "2px solid black",
+                          borderRadius: "50%",
+                          display: "inline-block",
+                        }}
+                      />
+                    ) : (
+                      <>{isSignUp ? "Create Account" : "Sign In"} →</>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Footer note */}
+            <p
+              className="l-s3"
+              style={{
+                textAlign: "center",
+                marginTop: 20,
+                fontFamily: "var(--font-mono)",
+                fontSize: 10,
+                color: "var(--lo)",
+                letterSpacing: "0.08em",
+                lineHeight: 1.8,
+              }}
             >
-              Privacy Policy
-            </a>
-          </p>
+              By continuing you agree to our{" "}
+              <a
+                href="#"
+                style={{ color: "var(--muted)", textDecoration: "none" }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.color = "var(--acid)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.color = "var(--muted)")
+                }
+              >
+                Terms
+              </a>
+              {" & "}
+              <a
+                href="#"
+                style={{ color: "var(--muted)", textDecoration: "none" }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.color = "var(--acid)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.color = "var(--muted)")
+                }
+              >
+                Privacy Policy
+              </a>
+            </p>
+          </div>
+        </div>
+
+        {/* Footer bar */}
+        <div
+          style={{
+            height: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 32px",
+            borderTop: "1px solid var(--border)",
+            background: "var(--off)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 10,
+              color: "var(--lo)",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+            }}
+          >
+            © {new Date().getFullYear()} unstuck duck
+          </span>
+          <div style={{ display: "flex", gap: 24 }}>
+            {["Privacy", "Terms"].map((t) => (
+              <a
+                key={t}
+                href="#"
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  color: "var(--lo)",
+                  textDecoration: "none",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  transition: "color 0.15s",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.color = "var(--acid)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.color = "var(--lo)")
+                }
+              >
+                {t}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* ── Footer ── matches homepage */}
-      <footer className="w-full border-t border-white/10 px-10 py-4 flex items-center justify-between">
-        <span className="text-xs text-neutral-600">
-          © {new Date().getFullYear()} Unstuck Duck
-        </span>
-        <div className="flex gap-5">
-          <a
-            href="#"
-            className="text-xs text-neutral-600 hover:text-neutral-300 transition-colors"
-          >
-            Privacy
-          </a>
-          <a
-            href="#"
-            className="text-xs text-neutral-600 hover:text-neutral-300 transition-colors"
-          >
-            Terms
-          </a>
-        </div>
-      </footer>
-
-      <style jsx>{`
-        @keyframes duckBounce {
-          0%,
-          100% {
-            transform: translateY(0) rotate(-5deg);
-          }
-          50% {
-            transform: translateY(-10px) rotate(5deg);
-          }
-        }
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-4px);
-          }
-          75% {
-            transform: translateX(4px);
-          }
-        }
-      `}</style>
-    </div>
+    </>
   );
 }
