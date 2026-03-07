@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 
 export default function Recorder({
   onTranscription,
@@ -26,22 +25,12 @@ export default function Recorder({
     mediaRecorder.onstop = async () => {
       const blob = new Blob(chunksRef.current, { type: "audio/webm" });
       const text = await sendToTranscribe(blob);
-
       const cleaned = text.trim();
-      const SILENCE_MARKERS = ["[BLANK_AUDIO]", "[ Silence ]", "[silence]"];
-
-      if (
-        !cleaned ||
-        cleaned.length === 0 ||
-        SILENCE_MARKERS.includes(cleaned)
-      ) {
-        return;
-      }
-
+      // Filter out silence/noise markers — anything that looks like [word] or [ word ] with no real speech
+      if (!cleaned || cleaned.length < 2) return;
+      if (/^\[.*\]$/.test(cleaned)) return;
       onTranscription(cleaned);
     };
-
-
 
     mediaRecorder.start();
     setRecording(true);
@@ -53,55 +42,101 @@ export default function Recorder({
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <>
+      <style>{`
+
+        .rec-btn {
+          position: relative;
+          width: 100%;
+          padding: 14px 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background: var(--card);
+          border: 1px solid var(--border2);
+          cursor: pointer;
+          transition: all 0.15s;
+          border-radius: 0;
+          outline: none;
+        }
+        .rec-btn:hover {
+          border-color: var(--acid);
+          background: var(--card2);
+        }
+        .rec-btn.active {
+          border-color: #f97316;
+          background: rgba(249,115,22,0.06);
+          border-left: 3px solid #f97316;
+        }
+
+        .rec-icon {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          color: var(--muted);
+          transition: color 0.15s;
+        }
+        .rec-btn:hover .rec-icon { color: var(--white); }
+        .rec-btn.active .rec-icon { color: #f97316; }
+        .rec-label {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--lo);
+          transition: color 0.15s;
+          position: relative;
+          z-index: 1;
+        }
+        .rec-btn:hover .rec-label { color: var(--muted); }
+        .rec-btn.active .rec-label { color: #f97316; }
+      `}</style>
+
       <button
         type="button"
+        className={`rec-btn${recording ? " active" : ""}`}
         onClick={recording ? stopRecording : startRecording}
-        className={`
-          relative flex items-center justify-center rounded-full border-4 mx-auto
-          transition-all duration-300 active:scale-95
-          bg-white dark:bg-white/5 border-stone-300 dark:border-white/20
-
-          ${
-            recording
-              ? "border-amber-400 shadow-[0_0_18px_rgba(255,200,0,0.45)] animate-[pulse_2s_ease-in-out_infinite]"
-              : "hover:scale-105 hover:opacity-80"
-          }
-        `}
       >
-        <Image
-          src="/mic.png"
-          alt="Record"
-          width={80}
-          height={80}
-          className={`rounded-full transition-opacity duration-300 ${
-            recording ? "opacity-70" : ""
-          }`}
-        />
+        <div className="rec-icon">
+          {/* Mic SVG */}
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+          >
+            <rect x="9" y="2" width="6" height="11" rx="0" />
+            <path d="M5 10v2a7 7 0 0 0 14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg>
+        </div>
 
-        {recording && (
-          <div className="absolute inset-0 rounded-full bg-amber-300/20 animate-[ping_2.5s_ease-in-out_infinite]"></div>
-        )}
+        <span className="rec-label">
+          {recording ? "● REC — tap to stop" : "tap to record"}
+        </span>
       </button>
-
-      {recording && (
-        <p className="text-amber-500 font-medium text-sm animate-[pulse_2s_ease-in-out_infinite]">
-          Listening…
-        </p>
-      )}
-    </div>
+    </>
   );
 }
 
 async function sendToTranscribe(blob: Blob): Promise<string> {
   const formData = new FormData();
   formData.append("audio", blob);
-
   const res = await fetch("/api/transcribe", {
     method: "POST",
     body: formData,
   });
-
   const data = await res.json();
   return data.text;
 }
