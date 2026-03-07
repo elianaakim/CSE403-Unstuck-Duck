@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Recorder from "@/Components/Recorder";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { clientSupabase } from "@/supabase/supabase";
@@ -111,7 +112,7 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
 }
 
 function scoreColor(s: number) {
-  if (s >= 80) return "#c8f135";
+  if (s >= 80) return "#4ade80";
   if (s >= 60) return "#f0b429";
   return "#ff6b6b";
 }
@@ -318,9 +319,9 @@ export default function Duck() {
           text-transform: uppercase;
         }
         .d-btn-acid:hover:not(:disabled) {
-          background: #d9ff3d;
+          background: #fb923c;
           transform: translateY(-1px);
-          box-shadow: 0 4px 0 rgba(200,241,53,0.3);
+          box-shadow: 0 4px 0 rgba(249,115,22,0.3);
         }
         .d-btn-acid:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
         .d-btn-acid:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -378,20 +379,20 @@ export default function Duck() {
 
         .d-sidebar-label {
           font-family: var(--font-mono);
-          font-size: 9px;
-          letter-spacing: 0.25em;
+          font-size: 10px;
+          letter-spacing: 0.2em;
           text-transform: uppercase;
           color: var(--muted);
           margin-bottom: 10px;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
         }
         .d-sidebar-label::after {
           content: '';
           flex: 1;
           height: 1px;
-          background: var(--border);
+          background: var(--border2);
         }
       `}</style>
 
@@ -443,7 +444,7 @@ export default function Duck() {
                       position: "absolute",
                       inset: -20,
                       background:
-                        "radial-gradient(circle, rgba(200,241,53,0.15) 0%, transparent 70%)",
+                        "radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 70%)",
                       pointerEvents: "none",
                     }}
                   />
@@ -527,33 +528,22 @@ export default function Duck() {
             <div className="flex flex-col gap-2 p-4 flex-1">
               {status === "active" && (
                 <>
-                  {/* Mic send button */}
+                  {/* Voice recorder */}
                   <div className="d-sidebar-label">Voice Send</div>
-                  <button
-                    type="button"
-                    onClick={() => handleSend()}
-                    disabled={isLoading || !chat.trim()}
+                  <div
                     style={{
                       width: "100%",
-                      padding: "12px 0",
                       display: "flex",
-                      alignItems: "center",
                       justifyContent: "center",
-                      background: "var(--card)",
-                      border: "2px solid var(--border2)",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                      opacity: !chat.trim() || isLoading ? 0.3 : 1,
+                      padding: "8px 0",
                     }}
                   >
-                    <Image
-                      src="/mic.png"
-                      alt="Send"
-                      width={52}
-                      height={52}
-                      className="rounded-full"
+                    <Recorder
+                      onTranscription={(text) => {
+                        setChat((prev) => (prev ? prev + " " + text : text));
+                      }}
                     />
-                  </button>
+                  </div>
 
                   <div className="d-sidebar-label" style={{ marginTop: 8 }}>
                     Actions
@@ -841,14 +831,14 @@ export default function Duck() {
                           fontFamily: "var(--font-mono)",
                           fontSize: 9,
                           letterSpacing: "0.05em",
-                          border: `1px solid ${msg.role === "duck" ? "rgba(200,241,53,0.3)" : "var(--border2)"}`,
+                          border: `1px solid ${msg.role === "duck" ? "rgba(249,115,22,0.3)" : "var(--border2)"}`,
                           color:
                             msg.role === "duck"
                               ? "var(--acid)"
                               : "var(--muted)",
                           background:
                             msg.role === "duck"
-                              ? "rgba(200,241,53,0.06)"
+                              ? "rgba(249,115,22,0.06)"
                               : "var(--card)",
                           flexDirection: "column",
                           marginTop: 2,
@@ -856,7 +846,7 @@ export default function Duck() {
                       >
                         {msg.role === "duck" ? (
                           <Image
-                            src="/duck_l.png"
+                            src="/duck.png"
                             alt="Duck"
                             width={22}
                             height={22}
@@ -884,7 +874,7 @@ export default function Duck() {
                                   padding: "12px 16px",
                                   background: "var(--card)",
                                   border: "1px solid var(--border)",
-                                  borderLeft: "3px solid rgba(200,241,53,0.4)",
+                                  borderLeft: "3px solid rgba(249,115,22,0.4)",
                                   color: "var(--white)",
                                   fontSize: 14,
                                   lineHeight: 1.6,
@@ -930,8 +920,8 @@ export default function Duck() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          border: "1px solid rgba(200,241,53,0.3)",
-                          background: "rgba(200,241,53,0.06)",
+                          border: "1px solid rgba(249,115,22,0.3)",
+                          background: "rgba(249,115,22,0.06)",
                           overflow: "hidden",
                         }}
                       >
@@ -948,7 +938,7 @@ export default function Duck() {
                           padding: "12px 16px",
                           background: "var(--card)",
                           border: "1px solid var(--border)",
-                          borderLeft: "3px solid rgba(200,241,53,0.4)",
+                          borderLeft: "3px solid rgba(249,115,22,0.4)",
                           display: "flex",
                           gap: 6,
                           alignItems: "center",

@@ -22,7 +22,7 @@ interface Session {
 }
 
 function scoreColor(s: number) {
-  if (s >= 80) return "#c8f135";
+  if (s >= 80) return "#4ade80";
   if (s >= 60) return "#f0b429";
   return "#ff6b6b";
 }
@@ -147,7 +147,7 @@ export default function HistoryPage() {
               style={{
                 fontFamily: "var(--font-mono)",
                 fontSize: 10,
-                color: "var(--acid)",
+                color: "#a78bfa",
                 letterSpacing: "0.25em",
                 textTransform: "uppercase",
                 marginBottom: 10,
@@ -167,7 +167,7 @@ export default function HistoryPage() {
             >
               TEACHING
               <br />
-              <span style={{ color: "var(--acid)" }}>HISTORY.</span>
+              <span style={{ color: "#a78bfa" }}>HISTORY.</span>
             </h1>
             <p
               style={{
@@ -299,8 +299,8 @@ export default function HistoryPage() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            background: "rgba(200,241,53,0.06)",
-                            border: "1px solid rgba(200,241,53,0.2)",
+                            background: "rgba(249,115,22,0.06)",
+                            border: "1px solid rgba(249,115,22,0.2)",
                             overflow: "hidden",
                           }}
                         >
@@ -471,10 +471,10 @@ export default function HistoryPage() {
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  border: `1px solid ${msg.role !== "user" ? "rgba(200,241,53,0.25)" : "var(--border2)"}`,
+                                  border: `1px solid ${msg.role !== "user" ? "rgba(249,115,22,0.25)" : "var(--border2)"}`,
                                   background:
                                     msg.role !== "user"
-                                      ? "rgba(200,241,53,0.06)"
+                                      ? "rgba(249,115,22,0.06)"
                                       : "var(--card2)",
                                   overflow: "hidden",
                                   fontFamily: "var(--font-mono)",
@@ -517,7 +517,7 @@ export default function HistoryPage() {
                                           background: "var(--card2)",
                                           border: "1px solid var(--border)",
                                           borderLeft:
-                                            "3px solid rgba(200,241,53,0.35)",
+                                            "3px solid rgba(249,115,22,0.35)",
                                           color: "var(--white)",
                                           fontSize: 13,
                                           lineHeight: 1.6,

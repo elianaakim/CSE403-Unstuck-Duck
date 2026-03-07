@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useAuth } from "@/supabase/authcontext";
 
 const navItems = [
@@ -15,8 +16,12 @@ const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const isActive = (path: string) => pathname === path;
+  const isDark = resolvedTheme === "dark";
 
   const handleSignOut = async () => {
     try {
@@ -53,9 +58,7 @@ const Navbar: React.FC = () => {
         }
         .nav-link:hover { color: var(--white); }
         .nav-link:hover::after { width: 100%; }
-        .nav-link.active {
-          color: var(--white);
-        }
+        .nav-link.active { color: var(--white); }
         .nav-link.active::after { width: 100%; background: var(--acid); }
 
         .nav-signout {
@@ -63,7 +66,7 @@ const Navbar: React.FC = () => {
           font-size: 10px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: var(--muted);
+          color: var(--lo);
           background: none;
           border: 1px solid var(--border);
           padding: 6px 14px;
@@ -74,8 +77,52 @@ const Navbar: React.FC = () => {
         .nav-signout:hover {
           color: var(--white);
           border-color: var(--border2);
-          background: rgba(255,255,255,0.04);
+          background: rgba(128,128,128,0.08);
         }
+
+        /* Toggle pill */
+        .nav-toggle {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          background: none;
+          border: none;
+          padding: 0;
+        }
+        .nav-toggle-label {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: #444440;
+          transition: color 0.2s;
+          user-select: none;
+        }
+        .nav-toggle-label.active-label { color: #f5f5f0; }
+        .nav-toggle-track {
+          position: relative;
+          width: 44px;
+          height: 24px;
+          border-radius: 999px;
+          background: var(--card2);
+          border: 1px solid var(--border2);
+          transition: background 0.2s, border-color 0.2s;
+          flex-shrink: 0;
+        }
+        .nav-toggle-track:hover { border-color: var(--acid); }
+        .nav-toggle-thumb {
+          position: absolute;
+          top: 3px;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: var(--acid);
+          transition: left 0.25s cubic-bezier(0.22,1,0.36,1);
+          box-shadow: 0 0 6px rgba(200,241,53,0.5);
+        }
+        .nav-toggle-thumb.dark  { left: 3px; }
+        .nav-toggle-thumb.light { left: calc(100% - 19px); }
       `}</style>
 
       <nav
@@ -91,10 +138,11 @@ const Navbar: React.FC = () => {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 32px",
-          background: "rgba(8,8,8,0.85)",
+          /* Always dark — navbar stays dark in both modes for contrast */
+          background: "rgba(8,8,8,0.92)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          borderBottom: "1px solid var(--border)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
         {/* Logo */}
@@ -104,7 +152,7 @@ const Navbar: React.FC = () => {
             fontFamily: "var(--font-display)",
             fontSize: 22,
             letterSpacing: "0.05em",
-            color: "var(--white)",
+            color: "#f5f5f0",
             textDecoration: "none",
             lineHeight: 1,
           }}
@@ -129,6 +177,7 @@ const Navbar: React.FC = () => {
               <Link
                 href={item.href}
                 className={`nav-link${isActive(item.href) ? " active" : ""}`}
+                style={{ color: isActive(item.href) ? "#f5f5f0" : "#666660" }}
               >
                 {item.label}
               </Link>
@@ -136,14 +185,42 @@ const Navbar: React.FC = () => {
           ))}
         </ul>
 
-        {/* Sign out */}
-        <button
-          className="nav-signout"
-          onClick={handleSignOut}
-          aria-label="Sign out"
-        >
-          Sign out ↗
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {/* DARK / LIGHT pill toggle */}
+          {mounted && (
+            <button
+              className="nav-toggle"
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              aria-label="Toggle theme"
+            >
+              <span
+                className={`nav-toggle-label${isDark ? " active-label" : ""}`}
+              >
+                Dark
+              </span>
+              <div className="nav-toggle-track">
+                <div
+                  className={`nav-toggle-thumb ${isDark ? "dark" : "light"}`}
+                />
+              </div>
+              <span
+                className={`nav-toggle-label${!isDark ? " active-label" : ""}`}
+              >
+                Light
+              </span>
+            </button>
+          )}
+
+          {/* Sign out */}
+          <button
+            className="nav-signout"
+            onClick={handleSignOut}
+            aria-label="Sign out"
+            style={{ color: "#666660", borderColor: "rgba(255,255,255,0.08)" }}
+          >
+            Sign out ↗
+          </button>
+        </div>
       </nav>
     </>
   );

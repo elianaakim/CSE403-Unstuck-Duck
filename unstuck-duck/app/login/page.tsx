@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/supabase/authcontext";
 import Image from "next/image";
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(
     searchParams.get("signup") === "true"
   );
+  const { resolvedTheme, setTheme } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -108,7 +110,7 @@ export default function LoginPage() {
           width: 100%;
           background: var(--card);
           border: 1px solid var(--border2);
-          border-left: 3px solid rgba(200,241,53,0.35);
+          border-left: 3px solid rgba(249,115,22,0.35);
           color: var(--white);
           font-family: var(--font-body);
           font-size: 14px;
@@ -170,9 +172,9 @@ export default function LoginPage() {
           gap: 8px;
         }
         .l-submit:hover:not(:disabled) {
-          background: #d9ff3d;
+          background: #fb923c;
           transform: translateY(-1px);
-          box-shadow: 0 4px 0 rgba(200,241,53,0.3);
+          box-shadow: 0 4px 0 rgba(249,115,22,0.3);
         }
         .l-submit:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
         .l-submit:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -193,6 +195,7 @@ export default function LoginPage() {
             height: 48,
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             padding: "0 32px",
             borderBottom: "1px solid var(--border)",
           }}
@@ -207,6 +210,75 @@ export default function LoginPage() {
           >
             unstuck duck<span style={{ color: "var(--acid)" }}>.</span>
           </span>
+
+          {/* Dark/Light toggle */}
+          {mounted && (
+            <button
+              onClick={() =>
+                setTheme(resolvedTheme === "dark" ? "light" : "dark")
+              }
+              aria-label="Toggle theme"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: resolvedTheme === "dark" ? "#f5f5f0" : "#444440",
+                  transition: "color 0.2s",
+                }}
+              >
+                Dark
+              </span>
+              <div
+                style={{
+                  position: "relative",
+                  width: 44,
+                  height: 24,
+                  borderRadius: 999,
+                  background: "var(--card2)",
+                  border: "1px solid var(--border2)",
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 3,
+                    left: resolvedTheme === "dark" ? 3 : "calc(100% - 19px)",
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    background: "var(--acid)",
+                    boxShadow: "0 0 6px rgba(249,115,22,0.5)",
+                    transition: "left 0.25s cubic-bezier(0.22,1,0.36,1)",
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: resolvedTheme !== "dark" ? "#f5f5f0" : "#444440",
+                  transition: "color 0.2s",
+                }}
+              >
+                Light
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Main centered content */}
@@ -424,7 +496,6 @@ export default function LoginPage() {
                     )}
                   </div>
 
-
                   {/* Submit */}
                   <button
                     type="submit"
@@ -451,47 +522,6 @@ export default function LoginPage() {
                 </div>
               </form>
             </div>
-
-            {/* Footer note */}
-            <p
-              className="l-s3"
-              style={{
-                textAlign: "center",
-                marginTop: 20,
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                color: "var(--lo)",
-                letterSpacing: "0.08em",
-                lineHeight: 1.8,
-              }}
-            >
-              By continuing you agree to our{" "}
-              <a
-                href="#"
-                style={{ color: "var(--muted)", textDecoration: "none" }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--acid)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--muted)")
-                }
-              >
-                Terms
-              </a>
-              {" & "}
-              <a
-                href="#"
-                style={{ color: "var(--muted)", textDecoration: "none" }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--acid)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--muted)")
-                }
-              >
-                Privacy Policy
-              </a>
-            </p>
           </div>
         </div>
 
@@ -518,31 +548,6 @@ export default function LoginPage() {
           >
             © {new Date().getFullYear()} unstuck duck
           </span>
-          <div style={{ display: "flex", gap: 24 }}>
-            {["Privacy", "Terms"].map((t) => (
-              <a
-                key={t}
-                href="#"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 10,
-                  color: "var(--lo)",
-                  textDecoration: "none",
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  transition: "color 0.15s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--acid)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--lo)")
-                }
-              >
-                {t}
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </>

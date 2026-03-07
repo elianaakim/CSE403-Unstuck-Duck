@@ -15,9 +15,9 @@ const SLIDES = [
     line1: "TEACH",
     line2: "YOUR",
     line3: "DUCK.",
-    sub: "/ Explain concepts / Get questioned back / Earn a score",
+    sub: " Explain concepts / Get questioned back / Earn a score",
     index: "01",
-    color: "#c8f135",
+    color: "#f97316",
   },
   {
     id: "lake",
@@ -29,7 +29,7 @@ const SLIDES = [
     line1: "DIVE",
     line2: "DEEP",
     line3: "IN.",
-    sub: "/ Open-ended / Explore freely / No limits",
+    sub: " Open-ended / Explore freely / No limits",
     index: "02",
     color: "#38d9a9",
   },
@@ -43,9 +43,9 @@ const SLIDES = [
     line1: "YOUR",
     line2: "JOURNEY",
     line3: "HERE.",
-    sub: "/ Past sessions / Progress tracked / Patterns revealed",
+    sub: " Past sessions / Progress tracked / Patterns revealed",
     index: "03",
-    color: "#ff922b",
+    color: "#a78bfa",
   },
 ];
 
@@ -147,7 +147,7 @@ export default function Home() {
           position:absolute;
           left:0; right:0;
           height:2px;
-          background:rgba(200,241,53,0.15);
+          background:rgba(249,115,22,0.15);
           animation:h-scanline 3s linear infinite;
           pointer-events:none;
         }
@@ -208,7 +208,7 @@ export default function Home() {
         .h-cta:hover {
           background: #d9ff3d;
           transform: translate(-2px,-2px);
-          box-shadow: 4px 4px 0 rgba(200,241,53,0.4);
+          box-shadow: 4px 4px 0 rgba(249,115,22,0.4);
         }
         .h-cta:active { transform: translate(0,0); box-shadow: none; }
 
@@ -547,31 +547,6 @@ export default function Home() {
           >
             learn by teaching — unstuck duck
           </span>
-          <div className="flex gap-6">
-            {["Privacy", "Terms"].map((t) => (
-              <Link
-                key={t}
-                href="#"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 10,
-                  color: "var(--lo)",
-                  textDecoration: "none",
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  transition: "color 0.15s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--acid)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--lo)")
-                }
-              >
-                {t}
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
     </>

@@ -9,10 +9,10 @@
   --border:  rgba(255,255,255,0.08);
   --border2: rgba(255,255,255,0.15);
 
-  /* acid yellow-green — the hero accent */
-  --acid:    #c8f135;
-  --acid-dim: rgba(200,241,53,0.12);
-  --acid-glow: rgba(200,241,53,0.35);
+  /* warm orange — the hero accent */
+  --acid:    #f97316;
+  --acid-dim: rgba(249,115,22,0.12);
+  --acid-glow: rgba(249,115,22,0.35);
 
   --white:   #f5f5f0;
   --muted:   #666660;
@@ -71,3 +71,35 @@ body::after {
 
 ::selection { background: var(--acid); color: var(--black); }
 :focus-visible { outline: 2px solid var(--acid); outline-offset: 2px; }
+
+/* ── Light mode ── */
+[data-theme="light"] {
+  --black:   #f5f5f0;
+  --off:     #ebebe6;
+  --card:    #e8e8e3;
+  --card2:   #dededa;
+  --border:  rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+
+  --white:   #111110;
+  --muted:   #555550;
+  --lo:      #999994;
+
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background: var(--black);
+  color: var(--white);
+}
+
+[data-theme="light"] body::before {
+  background-image: radial-gradient(circle, #000 1px, transparent 1px);
+  opacity: 0.025;
+}
+
+[data-theme="light"] body::after {
+  opacity: 0.08;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track { background: var(--black); }
