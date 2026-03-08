@@ -46,7 +46,22 @@ Windows:
 ```bash 
 irm https://ollama.com/install.ps1 | iex
 ```
+# Env file
+Create .env.local file - **make sure to create file in unstuck-duck subfolder**
+```bash
+ZOOM_SDK_CLIENT_ID=
+ZOOM_SDK_CLIENT_SECRET=
 
+ZOOM_CLIENT_ID=
+ZOOM_CLIENT_SECRET=
+ZOOM_ACCOUNT_ID=
+
+GEMINI_API_KEY=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_KEY=
+```
 
 # Running the Application
 Start the application:
