@@ -139,15 +139,11 @@ export default function Duck() {
   const [scoreKey, setScoreKey] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setTimeout(() => setMounted(true), 40);
   }, []);
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
 
   function now() {
     return new Date().toLocaleTimeString([], {
@@ -969,7 +965,6 @@ export default function Duck() {
                       </div>
                     </div>
                   )}
-                  <div ref={bottomRef} />
                 </div>
 
                 {/* Input */}
