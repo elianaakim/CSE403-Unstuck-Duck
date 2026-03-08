@@ -283,8 +283,8 @@ describe("POST /api/transcribe", () => {
       }
     });
 
-    it("should handle pipeline initialization errors", async () => {
-      mockPipeline.rejects(new Error("Failed to load Whisper model"));
+    it("should handle transcription errors gracefully", async () => {
+      mockTranscriberInstance.rejects(new Error("Transcription failed"));
 
       const audioFile = new File([Buffer.from("audio")], "test.mp3");
       const formData = new FormData();
@@ -295,12 +295,12 @@ describe("POST /api/transcribe", () => {
         body: formData,
       });
 
-      try {
-        await transcribePOST(req);
-        expect.fail("Should have thrown an error");
-      } catch (error) {
-        expect(error.message).to.include("Failed to load Whisper model");
-      }
+      const response = await transcribePOST(req);
+      const data = await response.json();
+
+      // Should return 200 with empty text instead of throwing
+      expect(response.status).to.equal(200);
+      expect(data.text).to.equal("");
     });
 
     it("should handle file write errors", async () => {
