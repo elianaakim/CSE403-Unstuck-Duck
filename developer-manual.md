@@ -29,6 +29,23 @@ Install dependences - **make sure to conduct all calls in unstuck-duck subfolder
 npm install
 brew install ffmpeg
 ```
+
+Create .env.local file - **make sure to create file in unstuck-duck subfolder**
+```bash
+ZOOM_SDK_CLIENT_ID=
+ZOOM_SDK_CLIENT_SECRET=
+
+ZOOM_CLIENT_ID=
+ZOOM_CLIENT_SECRET=
+ZOOM_ACCOUNT_ID=
+
+GEMINI_API_KEY=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_KEY=
+```
+
 Development Build
 ```bash
 npm run dev
