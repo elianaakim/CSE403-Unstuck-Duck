@@ -42,7 +42,9 @@ curl -fsSL https://ollama.com/install.sh | sh
 ollama pull llama3.2
 ```
 Windows:
-``` irm https://ollama.com/install.ps1 | iex ```
+```bash 
+irm https://ollama.com/install.ps1 | iex
+```
 
 
 # Running the Application
