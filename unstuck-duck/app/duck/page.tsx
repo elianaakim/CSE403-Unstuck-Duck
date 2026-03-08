@@ -658,7 +658,7 @@ export default function Duck() {
                 </>
               )}
 
-              {status === "ended" && finalAssessment && (
+              {status === "ended" && (
                 <>
                   <div className="d-sidebar-label" style={{ marginTop: 8 }}>
                     Session Over
