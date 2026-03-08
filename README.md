@@ -31,6 +31,7 @@ Clone the repository and install dependencies:
 git clone https://github.com/elianaakim/CSE403-Unstuck-Duck.git
 cd CSE403-Unstuck-Duck/unstuck-duck
 npm install
+brew install ffmpeg
 ```
 
 Install Ollama to run locally:
