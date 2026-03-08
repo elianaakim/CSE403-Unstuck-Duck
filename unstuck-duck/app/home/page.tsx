@@ -271,7 +271,10 @@ export default function Home() {
         </div>
 
         {/* ── MAIN GRID ── */}
-        <div className="flex flex-1" style={{ minHeight: 0 }}>
+        <div
+          className="flex flex-1"
+          style={{ minHeight: 0, paddingLeft: "60px" }}
+        >
           {/* LEFT COLUMN — slide selector */}
           <div
             className="h-s2 flex-shrink-0 flex flex-col justify-between border-r py-8 px-5"
@@ -283,7 +286,7 @@ export default function Home() {
           />
 
           {/* CENTER — hero content */}
-          <div className="flex-1 flex flex-col justify-between px-8 md:px-14 py-10 min-w-0">
+          <div className="flex-1 flex flex-col justify-between pl-16 pr-8 md:pl-24 md:pr-14 py-10 min-w-0">
             {/* Hero: two-column */}
             <div className="flex-1 flex items-center gap-10 lg:gap-16">
               {/* Big title block */}

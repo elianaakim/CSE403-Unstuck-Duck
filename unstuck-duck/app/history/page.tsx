@@ -29,7 +29,7 @@ function scoreColor(s: number) {
 function scoreLabel(s: number) {
   if (s >= 80) return "EXCELLENT";
   if (s >= 60) return "PROGRESS";
-  return "KEEP GOING";
+  return "GOOD START!";
 }
 
 export default function HistoryPage() {
@@ -179,7 +179,9 @@ export default function HistoryPage() {
             >
               {loading
                 ? "Loading…"
-                : `${sessions.length} session${sessions.length !== 1 ? "s" : ""} recorded`}
+                : `${sessions.length} session${
+                    sessions.length !== 1 ? "s" : ""
+                  } recorded`}
             </p>
           </div>
 
@@ -226,7 +228,7 @@ export default function HistoryPage() {
 
           {/* ── Empty state ── */}
           {!loading && sessions.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 gap-6">
+            <div className="flex flex-col items-center justify-center py-24 gap-0">
               <div style={{ opacity: 0.25 }}>
                 <Image
                   src="/duck_l.png"
@@ -276,8 +278,12 @@ export default function HistoryPage() {
                     className="h-row overflow-hidden"
                     style={{
                       background: "var(--card)",
-                      border: `1px solid ${isOpen ? col + "33" : "var(--border)"}`,
-                      borderLeft: `3px solid ${isOpen ? col : "var(--border2)"}`,
+                      border: `1px solid ${
+                        isOpen ? col + "33" : "var(--border)"
+                      }`,
+                      borderLeft: `3px solid ${
+                        isOpen ? col : "var(--border2)"
+                      }`,
                       transition: "border-color 0.2s",
                       animationDelay: `${idx * 0.05}s`,
                     }}
@@ -458,7 +464,11 @@ export default function HistoryPage() {
                           {session.Messages.map((msg, mi) => (
                             <div
                               key={msg.message_id}
-                              className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse h-msg-user" : "h-msg-duck"}`}
+                              className={`flex gap-3 ${
+                                msg.role === "user"
+                                  ? "flex-row-reverse h-msg-user"
+                                  : "h-msg-duck"
+                              }`}
                               style={{ animationDelay: `${mi * 0.03}s` }}
                             >
                               {/* Avatar */}
@@ -471,7 +481,11 @@ export default function HistoryPage() {
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  border: `1px solid ${msg.role !== "user" ? "rgba(249,115,22,0.25)" : "var(--border2)"}`,
+                                  border: `1px solid ${
+                                    msg.role !== "user"
+                                      ? "rgba(249,115,22,0.25)"
+                                      : "var(--border2)"
+                                  }`,
                                   background:
                                     msg.role !== "user"
                                       ? "rgba(249,115,22,0.06)"

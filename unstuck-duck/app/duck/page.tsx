@@ -420,7 +420,7 @@ export default function Duck() {
         />
 
         <main
-          className="flex w-full max-w-5xl gap-0 px-0"
+          className="flex w-full max-w-5xl gap-0 px-8"
           style={{ paddingTop: 2 }}
         >
           {/* ── SIDEBAR ── */}
@@ -479,8 +479,8 @@ export default function Duck() {
                 {status === "idle"
                   ? ""
                   : status === "active"
-                    ? "● LIVE"
-                    : "COMPLETE"}
+                  ? "● LIVE"
+                  : "COMPLETE"}
               </div>
             </div>
 
@@ -817,7 +817,11 @@ export default function Duck() {
                   {messages.map((msg, idx) => (
                     <div
                       key={msg.id}
-                      className={`flex gap-3 mb-4 ${msg.role === "user" ? "flex-row-reverse d-msg-user" : "d-msg-duck"}`}
+                      className={`flex gap-3 mb-4 ${
+                        msg.role === "user"
+                          ? "flex-row-reverse d-msg-user"
+                          : "d-msg-duck"
+                      }`}
                     >
                       {/* Avatar */}
                       <div
@@ -831,7 +835,11 @@ export default function Duck() {
                           fontFamily: "var(--font-mono)",
                           fontSize: 9,
                           letterSpacing: "0.05em",
-                          border: `1px solid ${msg.role === "duck" ? "rgba(249,115,22,0.3)" : "var(--border2)"}`,
+                          border: `1px solid ${
+                            msg.role === "duck"
+                              ? "rgba(249,115,22,0.3)"
+                              : "var(--border2)"
+                          }`,
                           color:
                             msg.role === "duck"
                               ? "var(--acid)"
@@ -952,7 +960,9 @@ export default function Duck() {
                               height: 5,
                               background: "var(--muted)",
                               display: "inline-block",
-                              animation: `d-dot 1s ${i * 0.18}s ease-in-out infinite`,
+                              animation: `d-dot 1s ${
+                                i * 0.18
+                              }s ease-in-out infinite`,
                             }}
                           />
                         ))}
