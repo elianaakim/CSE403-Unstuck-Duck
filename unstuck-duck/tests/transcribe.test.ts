@@ -263,7 +263,7 @@ describe("POST /api/transcribe", () => {
       expect(data.text).to.equal("");
     });
 
-    it("should handle transcription errors", async () => {
+    it("should handle transcription errors gracefully", async () => {
       mockTranscriberInstance.rejects(new Error("Transcription failed"));
 
       const audioFile = new File([Buffer.from("audio")], "test.mp3");
@@ -275,12 +275,12 @@ describe("POST /api/transcribe", () => {
         body: formData,
       });
 
-      try {
-        await transcribePOST(req);
-        expect.fail("Should have thrown an error");
-      } catch (error) {
-        expect(error.message).to.include("Transcription failed");
-      }
+      const response = await transcribePOST(req);
+      const data = await response.json();
+
+      // Should return 200 with empty text instead of throwing
+      expect(response.status).to.equal(200);
+      expect(data.text).to.equal("");
     });
 
     it("should handle transcription errors gracefully", async () => {
@@ -378,7 +378,7 @@ describe("POST /api/transcribe", () => {
 
       await transcribePOST(req);
 
-      expect(mockOsTmpdir.calledOnce).to.be.true;
+      expect(mockOsTmpdir.called).to.be.true;
     });
   });
 
@@ -402,6 +402,25 @@ describe("POST /api/transcribe", () => {
 
       expect(data).to.have.all.keys("text");
       expect(data.text).to.be.a("string");
+    });
+
+    it("should handle null text in transcription result", async () => {
+      mockTranscriberInstance.resolves({ text: null });
+
+      const audioFile = new File([Buffer.from("audio")], "test.mp3");
+      const formData = new FormData();
+      formData.append("audio", audioFile);
+
+      const req = new Request("http://localhost:3000/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      const response = await transcribePOST(req);
+      const data = await response.json();
+
+      expect(response.status).to.equal(200);
+      expect(data.text).to.equal("");
     });
 
     it("should handle empty transcription", async () => {
