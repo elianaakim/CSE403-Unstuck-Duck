@@ -322,6 +322,24 @@ describe("POST /api/transcribe", () => {
       expect(response.status).to.equal(200);
       expect(data.text).to.equal("");
     });
+
+    it("should clean up temp file even when errors occur", async () => {
+      mockDecodeToPCM.rejects(new Error("Decode failed"));
+
+      const audioFile = new File([Buffer.from("audio")], "test.mp3");
+      const formData = new FormData();
+      formData.append("audio", audioFile);
+
+      const req = new Request("http://localhost:3000/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      await transcribePOST(req);
+
+      // Verify temp file cleanup happened even though decode failed
+      expect(mockFsUnlinkSync.calledOnce).to.be.true;
+    });
   });
 
   describe("Temp File Naming", () => {
