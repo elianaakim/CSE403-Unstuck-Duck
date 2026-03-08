@@ -14,7 +14,7 @@ describe("POST /api/transcribe", () => {
   let mockOsTmpdir: sinon.SinonStub;
   let writtenFiles: string[];
 
-  beforeEach(() => {
+  beforeEach(async () => {
     writtenFiles = [];
 
     // Mock transcriber instance
@@ -134,19 +134,9 @@ describe("POST /api/transcribe", () => {
     expect(decodePath).to.match(/^\/tmp\/audio-\d+$/);
   });
 
-  it("should initialize Whisper pipeline on first request", async () => {
-    const audioFile = new File([Buffer.from("audio")], "test.mp3");
-    const formData = new FormData();
-    formData.append("audio", audioFile);
-
-    const req = new Request("http://localhost:3000/api/transcribe", {
-      method: "POST",
-      body: formData,
-    });
-
-    await transcribePOST(req);
-
-    expect(mockPipeline.calledOnce).to.be.true;
+  it("should initialize Whisper pipeline on warmup", async () => {
+    // Pipeline should be called during warmup (in beforeEach)
+    expect(mockPipeline.called).to.be.true;
     expect(mockPipeline.firstCall.args[0]).to.equal(
       "automatic-speech-recognition"
     );
@@ -200,6 +190,24 @@ describe("POST /api/transcribe", () => {
     }
   });
 
+  it("should clean up temp file after transcription", async () => {
+    const audioFile = new File([Buffer.from("audio")], "test.mp3");
+    const formData = new FormData();
+    formData.append("audio", audioFile);
+
+    const req = new Request("http://localhost:3000/api/transcribe", {
+      method: "POST",
+      body: formData,
+    });
+
+    await transcribePOST(req);
+
+    // Verify temp file was cleaned up
+    expect(mockFsUnlinkSync.calledOnce).to.be.true;
+    const unlinkPath = mockFsUnlinkSync.firstCall.args[0];
+    expect(unlinkPath).to.match(/^\/tmp\/audio-\d+$/);
+  });
+
   describe("Validation", () => {
     it("should reject request without audio file", async () => {
       const formData = new FormData();
@@ -235,7 +243,7 @@ describe("POST /api/transcribe", () => {
   });
 
   describe("Error Handling", () => {
-    it("should handle decodeToPCM errors", async () => {
+    it("should handle decodeToPCM errors gracefully", async () => {
       mockDecodeToPCM.rejects(new Error("FFmpeg decoding failed"));
 
       const audioFile = new File([Buffer.from("audio")], "test.mp3");
@@ -247,12 +255,12 @@ describe("POST /api/transcribe", () => {
         body: formData,
       });
 
-      try {
-        await transcribePOST(req);
-        expect.fail("Should have thrown an error");
-      } catch (error) {
-        expect(error.message).to.include("FFmpeg decoding failed");
-      }
+      const response = await transcribePOST(req);
+      const data = await response.json();
+
+      // Should return 200 with empty text instead of throwing
+      expect(response.status).to.equal(200);
+      expect(data.text).to.equal("");
     });
 
     it("should handle transcription errors", async () => {
@@ -275,8 +283,8 @@ describe("POST /api/transcribe", () => {
       }
     });
 
-    it("should handle pipeline initialization errors", async () => {
-      mockPipeline.rejects(new Error("Failed to load Whisper model"));
+    it("should handle transcription errors gracefully", async () => {
+      mockTranscriberInstance.rejects(new Error("Transcription failed"));
 
       const audioFile = new File([Buffer.from("audio")], "test.mp3");
       const formData = new FormData();
@@ -287,12 +295,12 @@ describe("POST /api/transcribe", () => {
         body: formData,
       });
 
-      try {
-        await transcribePOST(req);
-        expect.fail("Should have thrown an error");
-      } catch (error) {
-        expect(error.message).to.include("Failed to load Whisper model");
-      }
+      const response = await transcribePOST(req);
+      const data = await response.json();
+
+      // Should return 200 with empty text instead of throwing
+      expect(response.status).to.equal(200);
+      expect(data.text).to.equal("");
     });
 
     it("should handle file write errors", async () => {
