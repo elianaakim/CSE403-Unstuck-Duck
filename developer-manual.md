@@ -27,6 +27,7 @@ cd CSE403-Unstuck-Duck/unstuck-duck
 Install dependences - **make sure to conduct all npm calls in unstuck-duck subfolder**
 ```bash
 npm install
+brew install ffmpeg
 ```
 Development Build
 ```bash
