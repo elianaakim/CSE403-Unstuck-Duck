@@ -152,6 +152,35 @@ export default function Duck() {
     }
   }, [chat]);
 
+  useEffect(() => {
+    if (status !== "active") return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "active") return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest("a");
+      if (target && !target.href.includes("/duck")) {
+        const confirmed = window.confirm(
+          "You have an active session. Leave without ending it?"
+        );
+        if (!confirmed) e.preventDefault();
+      }
+    };
+
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, [status]);
+
   function now() {
     return new Date().toLocaleTimeString([], {
       hour: "2-digit",
