@@ -197,7 +197,9 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "0 32px",
-            borderBottom: "1px solid var(--border)",
+            background: "rgba(8,8,8,0.92)",
+            backdropFilter: "blur(12px)",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
           }}
         >
           <span
@@ -205,7 +207,7 @@ export default function LoginPage() {
               fontFamily: "var(--font-display)",
               fontSize: 18,
               letterSpacing: "0.05em",
-              color: "var(--white)",
+              color: "#f5f5f0",
             }}
           >
             unstuck duck<span style={{ color: "var(--acid)" }}>.</span>
