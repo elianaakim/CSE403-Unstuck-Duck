@@ -496,6 +496,32 @@ export default function LoginPage() {
                     )}
                   </div>
 
+                  {/* Forgot password */}
+                  {!isSignUp && (
+                    <div style={{ textAlign: "right", marginTop: -8 }}>
+                      <a
+                        href="#"
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 10,
+                          color: "var(--lo)",
+                          letterSpacing: "0.1em",
+                          textDecoration: "none",
+                          textTransform: "uppercase",
+                          transition: "color 0.15s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.color = "#f97316")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.color = "var(--lo)")
+                        }
+                      >
+                        Forgot password?
+                      </a>
+                    </div>
+                  )}
+
                   {/* Submit */}
                   <button
                     type="submit"
