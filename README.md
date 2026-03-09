@@ -1,4 +1,9 @@
 # Unstuck Duck
+
+User Manual: [user-manual.md](user-manual.md)
+
+Developer Manual: [developer-manuel.md](developer-manuel.md)
+
 # Abstract
 
 One of the most effective ways to learn is to teach. We decided to leverage generative AI to turn any learner into a teacher. With Unstuck Duck, users teach a sentient rubber duck any concept they want. The duck responds with follow-up questions when explanations are unclear, asks for specific examples, and challenges oversimplified explanations.
