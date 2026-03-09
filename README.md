@@ -101,7 +101,7 @@ git checkout v0.1.0-final
 
 # Running Tests
 
-This project uses Mocha, Chai, and Supertest for testing.
+This project uses Mocha, Chai, Sinon, and Proxyquire for testing.
 
 Run all tests with:
 
