@@ -129,7 +129,3 @@ Our core use case is fully functional:
 9. The backend will analyze the information provided and determine a score on how well the topic was taught
 
 10. To save the history, you must hit the end session button. A warning will pop up if you try to navigate away without clicking "End Session".
-
-```bash
-http://localhost:3000/duck
-```
