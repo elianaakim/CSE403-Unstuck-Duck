@@ -23,7 +23,7 @@ To run Unstuck Duck locally, you need:
 Hypothetically our website is hosted on the web at http://unstuck-duck.com
 
 ### Display Appearance
-  1. In the top left corner, you can select Dark or Light mode. 
+  1. In the top right corner on the navbar, you can select Dark or Light mode. 
 
 ### Logging in
   1. Open http://unstuck-duck.com
