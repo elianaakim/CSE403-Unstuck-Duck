@@ -138,6 +138,8 @@ export default function Duck() {
   const [hasNewMessageSinceEval, setHasNewMessageSinceEval] = useState(false);
   const [scoreKey, setScoreKey] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 

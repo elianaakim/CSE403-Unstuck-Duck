@@ -38,6 +38,8 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setMounted(true), 40);
@@ -62,6 +64,38 @@ export default function HistoryPage() {
       setError(err instanceof Error ? err.message : "Failed to load history");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (selected.size === 0) return;
+    const confirmed = window.confirm(
+      `Delete ${selected.size} session${
+        selected.size > 1 ? "s" : ""
+      }? This cannot be undone.`
+    );
+    if (!confirmed) return;
+    setIsDeleting(true);
+    try {
+      const {
+        data: { session: authSession },
+      } = await clientSupabase.auth.getSession();
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          fetch(`/api/sessions/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${authSession?.access_token ?? ""}`,
+            },
+          })
+        )
+      );
+      setSessions((prev) => prev.filter((s) => !selected.has(s.session_id)));
+      setSelected(new Set());
+    } catch {
+      alert("Failed to delete some sessions. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -183,6 +217,58 @@ export default function HistoryPage() {
                     sessions.length !== 1 ? "s" : ""
                   } recorded`}
             </p>
+            {selected.size > 0 && (
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--muted)",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {selected.size} selected
+                </span>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 12,
+                    letterSpacing: "0.12em",
+                    padding: "6px 16px",
+                    background: "rgba(255,107,107,0.1)",
+                    color: "#ff6b6b",
+                    border: "1px solid rgba(255,107,107,0.4)",
+                    cursor: isDeleting ? "not-allowed" : "pointer",
+                    textTransform: "uppercase",
+                    opacity: isDeleting ? 0.5 : 1,
+                  }}
+                >
+                  {isDeleting ? "Deleting…" : "✕ Delete Selected"}
+                </button>
+                <button
+                  onClick={() => setSelected(new Set())}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--muted)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  cancel
+                </button>
+              </div>
+            )}
           </div>
 
           {/* ── Error ── */}
@@ -289,140 +375,186 @@ export default function HistoryPage() {
                     }}
                   >
                     {/* Session row */}
-                    <button
-                      className="h-session-btn"
-                      onClick={() =>
-                        setExpanded(isOpen ? null : session.session_id)
-                      }
-                    >
-                      {/* Left: duck + topic */}
-                      <div className="flex items-center gap-4 min-w-0">
+                    <div style={{ display: "flex", alignItems: "stretch" }}>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            next.has(session.session_id)
+                              ? next.delete(session.session_id)
+                              : next.add(session.session_id);
+                            return next;
+                          });
+                        }}
+                        style={{
+                          width: 44,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          flexShrink: 0,
+                          borderRight: "1px solid var(--border)",
+                        }}
+                      >
                         <div
                           style={{
-                            width: 36,
-                            height: 36,
-                            flexShrink: 0,
+                            width: 16,
+                            height: 16,
+                            border: `1px solid ${
+                              selected.has(session.session_id)
+                                ? "#ff6b6b"
+                                : "var(--border2)"
+                            }`,
+                            background: selected.has(session.session_id)
+                              ? "rgba(255,107,107,0.15)"
+                              : "transparent",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            background: "rgba(249,115,22,0.06)",
-                            border: "1px solid rgba(249,115,22,0.2)",
-                            overflow: "hidden",
+                            fontSize: 10,
+                            color: "#ff6b6b",
+                            transition: "all 0.15s",
                           }}
                         >
-                          <Image
-                            src="/duck.png"
-                            alt="Duck"
-                            width={28}
-                            height={28}
-                            style={{ objectFit: "contain" }}
-                          />
-                        </div>
-
-                        <div className="min-w-0">
-                          <div
-                            style={{
-                              fontFamily: "var(--font-display)",
-                              fontSize: 16,
-                              letterSpacing: "0.05em",
-                              color: "var(--white)",
-                              textTransform: "uppercase",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {session.topic}
-                          </div>
-                          <div
-                            style={{
-                              fontFamily: "var(--font-mono)",
-                              fontSize: 10,
-                              color: "var(--muted)",
-                              letterSpacing: "0.1em",
-                              marginTop: 2,
-                            }}
-                          >
-                            {formatDate(session.started_at)}
-                            {" · "}
-                            {session.Messages.length} msg
-                            {session.Messages.length !== 1 ? "s" : ""}
-                          </div>
+                          {selected.has(session.session_id) ? "✕" : ""}
                         </div>
                       </div>
-
-                      {/* Right: score + chevron */}
-                      <div className="flex items-center gap-5 flex-shrink-0 ml-4">
-                        <div style={{ textAlign: "right" }}>
+                      <button
+                        className="h-session-btn"
+                        onClick={() =>
+                          setExpanded(isOpen ? null : session.session_id)
+                        }
+                      >
+                        {/* Left: duck + topic */}
+                        <div className="flex items-center gap-4 min-w-0">
                           <div
                             style={{
-                              fontFamily: "var(--font-mono)",
-                              fontSize: 9,
-                              color: "var(--lo)",
-                              letterSpacing: "0.2em",
-                              textTransform: "uppercase",
-                              marginBottom: 2,
+                              width: 36,
+                              height: 36,
+                              flexShrink: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: "rgba(249,115,22,0.06)",
+                              border: "1px solid rgba(249,115,22,0.2)",
+                              overflow: "hidden",
                             }}
                           >
-                            Score
-                          </div>
-                          <div
-                            style={{
-                              fontFamily: "var(--font-display)",
-                              fontSize: 28,
-                              color: col,
-                              letterSpacing: "0.02em",
-                              lineHeight: 1,
-                            }}
-                          >
-                            {sc}
-                          </div>
-                          {/* Score bar */}
-                          <div
-                            className="h-score-bar-track"
-                            style={{ width: 64 }}
-                          >
-                            <div
-                              style={{
-                                height: "100%",
-                                width: `${sc}%`,
-                                background: col,
-                                transition:
-                                  "width 0.8s cubic-bezier(0.22,1,0.36,1)",
-                                boxShadow: `0 0 6px ${col}`,
-                              }}
+                            <Image
+                              src="/duck.png"
+                              alt="Duck"
+                              width={28}
+                              height={28}
+                              style={{ objectFit: "contain" }}
                             />
                           </div>
-                          <div
-                            style={{
-                              fontFamily: "var(--font-mono)",
-                              fontSize: 8,
-                              color: col,
-                              letterSpacing: "0.1em",
-                              textTransform: "uppercase",
-                              marginTop: 3,
-                            }}
-                          >
-                            {scoreLabel(sc)}
+
+                          <div className="min-w-0">
+                            <div
+                              style={{
+                                fontFamily: "var(--font-display)",
+                                fontSize: 16,
+                                letterSpacing: "0.05em",
+                                color: "var(--white)",
+                                textTransform: "uppercase",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {session.topic}
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 10,
+                                color: "var(--muted)",
+                                letterSpacing: "0.1em",
+                                marginTop: 2,
+                              }}
+                            >
+                              {formatDate(session.started_at)}
+                              {" · "}
+                              {session.Messages.length} msg
+                              {session.Messages.length !== 1 ? "s" : ""}
+                            </div>
                           </div>
                         </div>
 
-                        <div
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: 11,
-                            color: isOpen ? "var(--acid)" : "var(--lo)",
-                            transition: "transform 0.2s, color 0.2s",
-                            transform: isOpen
-                              ? "rotate(90deg)"
-                              : "rotate(0deg)",
-                            display: "inline-block",
-                          }}
-                        >
-                          ▶
+                        {/* Right: score + chevron */}
+                        <div className="flex items-center gap-5 flex-shrink-0 ml-4">
+                          <div style={{ textAlign: "right" }}>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 9,
+                                color: "var(--lo)",
+                                letterSpacing: "0.2em",
+                                textTransform: "uppercase",
+                                marginBottom: 2,
+                              }}
+                            >
+                              Score
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-display)",
+                                fontSize: 28,
+                                color: col,
+                                letterSpacing: "0.02em",
+                                lineHeight: 1,
+                              }}
+                            >
+                              {sc}
+                            </div>
+                            {/* Score bar */}
+                            <div
+                              className="h-score-bar-track"
+                              style={{ width: 64 }}
+                            >
+                              <div
+                                style={{
+                                  height: "100%",
+                                  width: `${sc}%`,
+                                  background: col,
+                                  transition:
+                                    "width 0.8s cubic-bezier(0.22,1,0.36,1)",
+                                  boxShadow: `0 0 6px ${col}`,
+                                }}
+                              />
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 8,
+                                color: col,
+                                letterSpacing: "0.1em",
+                                textTransform: "uppercase",
+                                marginTop: 3,
+                              }}
+                            >
+                              {scoreLabel(sc)}
+                            </div>
+                          </div>
+
+                          <div
+                            style={{
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              color: isOpen ? "var(--acid)" : "var(--lo)",
+                              transition: "transform 0.2s, color 0.2s",
+                              transform: isOpen
+                                ? "rotate(90deg)"
+                                : "rotate(0deg)",
+                              display: "inline-block",
+                            }}
+                          >
+                            ▶
+                          </div>
                         </div>
-                      </div>
-                    </button>
+                      </button>
+                    </div>
 
                     {/* Expanded transcript */}
                     {isOpen && (
