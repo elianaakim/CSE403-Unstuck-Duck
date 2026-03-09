@@ -82,16 +82,16 @@ For backend (ollama):
 ```bash
 http://localhost:11434
 ```
-# Beta Release Tag
+# Final Release Tag
 
 The GitHub tag for this milestone is:
 ```bash
-v0.3.0-gamma
+v0.1.0-final
 ```
 
 To check out the exact commit set for this release:
 ```bash
-git checkout v0.3.0-gamma
+git checkout v0.1.0-final
 ```
 
 # Running Tests
