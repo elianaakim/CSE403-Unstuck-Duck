@@ -119,7 +119,7 @@ function scoreColor(s: number) {
 function scoreLabel(s: number) {
   if (s >= 80) return "EXCELLENT";
   if (s >= 60) return "PROGRESS";
-  return "KEEP GOING";
+  return "GOOD START!";
 }
 
 export default function Duck() {
