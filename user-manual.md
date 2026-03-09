@@ -18,35 +18,11 @@ To run Unstuck Duck locally, you need:
 - macOS, Windows, or Linux
 - Chrome, Firefox, or Safari (latest versions)
 
-## Clone the Repository
 
-```bash
-git clone https://github.com/elianaakim/CSE403-Unstuck-Duck.git
-cd CSE403-Unstuck-Duck/unstuck-duck
-npm install
-```
-## Running the application
-Start the application:
-
-Make sure to run all npm commands from `/unstuck-duck/`!
-```bash
-npm run dev
-```
-
-The application will run locally at:
-
-For frontend:
-```bash
-http://localhost:3000
-```
-
-For backend:
-```bash
-http://localhost:11434
-```
-## Using the software
+## Using the website
+Hypothetically our website is hosted on the web at http://unstuck-duck.com
 ### Logging in
-  1. Open http://localhost:3000
+  1. Open http://unstuck-duck.com
   2. Enter credentials or create account
   3. Press sign in or sign up
 
