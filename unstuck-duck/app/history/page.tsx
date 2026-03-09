@@ -21,11 +21,29 @@ interface Session {
   Messages: Message[];
 }
 
+function scoreColor(s: number) {
+  if (s >= 80) return "#4ade80";
+  if (s >= 60) return "#f0b429";
+  return "#ff6b6b";
+}
+function scoreLabel(s: number) {
+  if (s >= 80) return "EXCELLENT";
+  if (s >= 60) return "PROGRESS";
+  return "GOOD START!";
+}
+
 export default function HistoryPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedSession, setExpandedSession] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => setMounted(true), 40);
+  }, []);
 
   useEffect(() => {
     fetchHistory();
@@ -33,16 +51,13 @@ export default function HistoryPage() {
 
   async function fetchHistory() {
     try {
-      const { data: { session: authSession } } = await clientSupabase.auth.getSession();
-      
+      const {
+        data: { session: authSession },
+      } = await clientSupabase.auth.getSession();
       const res = await fetch("/api/history", {
-        headers: {
-          Authorization: `Bearer ${authSession?.access_token ?? ""}`,
-        },
+        headers: { Authorization: `Bearer ${authSession?.access_token ?? ""}` },
       });
-
       if (!res.ok) throw new Error("Failed to fetch history");
-      
       const data = await res.json();
       setSessions(data.sessions || []);
     } catch (err) {
@@ -52,143 +67,622 @@ export default function HistoryPage() {
     }
   }
 
-  function formatDate(dateString: string) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  function scoreColor(score: number) {
-    if (score >= 80) return "text-emerald-500";
-    if (score >= 60) return "text-amber-400";
-    return "text-red-400";
-  }
-
-  if (loading) {
-    return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-neutral-950">
-          <div className="text-stone-600 dark:text-neutral-400">Loading history...</div>
-        </div>
-      </ProtectedRoute>
+  async function handleDelete() {
+    if (selected.size === 0) return;
+    const confirmed = window.confirm(
+      `Delete ${selected.size} session${
+        selected.size > 1 ? "s" : ""
+      }? This cannot be undone.`
     );
+    if (!confirmed) return;
+    setIsDeleting(true);
+    try {
+      const {
+        data: { session: authSession },
+      } = await clientSupabase.auth.getSession();
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          fetch(`/api/sessions/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${authSession?.access_token ?? ""}`,
+            },
+          })
+        )
+      );
+      setSessions((prev) => prev.filter((s) => !selected.has(s.session_id)));
+      setSelected(new Set());
+    } catch {
+      alert("Failed to delete some sessions. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function formatDate(d: string) {
+    return new Date(d).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen font-sans transition-colors duration-300 bg-stone-50 dark:bg-neutral-950">
-        <main className="w-full max-w-5xl mx-auto px-8 py-10">
-          
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-stone-900 dark:text-white mb-2">
-              Teaching History
+      <style>{`
+        @keyframes h-fadeUp {
+          from { opacity:0; transform:translateY(16px); }
+          to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes h-expand {
+          from { opacity:0; transform:translateY(-8px); }
+          to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes h-msgDuck {
+          from { opacity:0; transform:translateX(-10px); }
+          to   { opacity:1; transform:translateX(0); }
+        }
+        @keyframes h-msgUser {
+          from { opacity:0; transform:translateX(10px); }
+          to   { opacity:1; transform:translateX(0); }
+        }
+
+        .h-row {
+          animation: h-fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        .h-expanded {
+          animation: h-expand 0.3s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        .h-msg-duck { animation: h-msgDuck 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+        .h-msg-user { animation: h-msgUser 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+
+        .h-session-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 18px 20px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          transition: background 0.15s;
+        }
+        .h-session-btn:hover {
+          background: rgba(255,255,255,0.02);
+        }
+
+        .h-score-bar-track {
+          height: 3px;
+          background: rgba(255,255,255,0.06);
+          width: 100%;
+          margin-top: 6px;
+        }
+      `}</style>
+
+      <div
+        className="z1 min-h-screen flex flex-col items-center"
+        style={{
+          fontFamily: "var(--font-body)",
+          opacity: mounted ? 1 : 0,
+          transition: "opacity 0.3s ease",
+          paddingTop: 56,
+        }}
+      >
+        <main className="w-full max-w-4xl px-8 py-10">
+          {/* ── Header ── */}
+          <div
+            className="mb-10 pb-6"
+            style={{ borderBottom: "1px solid var(--border)" }}
+          >
+            <div
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 10,
+                color: "#a78bfa",
+                letterSpacing: "0.25em",
+                textTransform: "uppercase",
+                marginBottom: 10,
+              }}
+            >
+              / Your Sessions
+            </div>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(40px, 7vw, 72px)",
+                lineHeight: 0.9,
+                letterSpacing: "0.02em",
+                color: "var(--white)",
+                marginBottom: 12,
+              }}
+            >
+              TEACHING
+              <br />
+              <span style={{ color: "#a78bfa" }}>HISTORY.</span>
             </h1>
-            <p className="text-sm text-stone-500 dark:text-neutral-400">
-              Review your past teaching sessions
+            <p
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                color: "var(--muted)",
+                letterSpacing: "0.05em",
+              }}
+            >
+              {loading
+                ? "Loading…"
+                : `${sessions.length} session${
+                    sessions.length !== 1 ? "s" : ""
+                  } recorded`}
             </p>
+            {selected.size > 0 && (
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--muted)",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {selected.size} selected
+                </span>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 12,
+                    letterSpacing: "0.12em",
+                    padding: "6px 16px",
+                    background: "rgba(255,107,107,0.1)",
+                    color: "#ff6b6b",
+                    border: "1px solid rgba(255,107,107,0.4)",
+                    cursor: isDeleting ? "not-allowed" : "pointer",
+                    textTransform: "uppercase",
+                    opacity: isDeleting ? 0.5 : 1,
+                  }}
+                >
+                  {isDeleting ? "Deleting…" : "✕ Delete Selected"}
+                </button>
+                <button
+                  onClick={() => setSelected(new Set())}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--muted)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  cancel
+                </button>
+              </div>
+            )}
           </div>
 
+          {/* ── Error ── */}
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div
+              style={{
+                padding: "12px 16px",
+                marginBottom: 24,
+                background: "rgba(255,107,107,0.07)",
+                border: "1px solid rgba(255,107,107,0.3)",
+                borderLeft: "3px solid #ff6b6b",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  color: "#ff6b6b",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                ⚠ {error}
+              </p>
             </div>
           )}
 
-          {sessions.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">📚</div>
-              <h2 className="text-xl font-semibold text-stone-900 dark:text-white mb-2">
-                No sessions yet
-              </h2>
-              <p className="text-stone-500 dark:text-neutral-400 text-sm">
-                Start teaching the duck to see your history here!
-              </p>
+          {/* ── Loading ── */}
+          {loading && (
+            <div className="flex flex-col gap-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 72,
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    opacity: 0.4 - i * 0.08,
+                  }}
+                />
+              ))}
             </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {sessions.map((session) => {
-                const isExpanded = expandedSession === session.session_id;
-                
+          )}
+
+          {/* ── Empty state ── */}
+          {!loading && sessions.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-24 gap-0">
+              <div style={{ opacity: 0.25 }}>
+                <Image
+                  src="/duck_l.png"
+                  alt="Duck"
+                  width={100}
+                  height={100}
+                  style={{ filter: "grayscale(1)" }}
+                />
+              </div>
+              <div className="text-center">
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 28,
+                    color: "var(--white)",
+                    letterSpacing: "0.05em",
+                    marginBottom: 8,
+                  }}
+                >
+                  NO SESSIONS YET
+                </div>
+                <p
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--muted)",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Start teaching the duck to see your history here.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Sessions list ── */}
+          {!loading && sessions.length > 0 && (
+            <div className="flex flex-col gap-3">
+              {sessions.map((session, idx) => {
+                const isOpen = expanded === session.session_id;
+                const sc = session.score;
+                const col = scoreColor(sc);
+
                 return (
                   <div
                     key={session.session_id}
-                    className="rounded-2xl border transition-colors duration-300 bg-white dark:bg-white/5 border-stone-200 dark:border-white/10 overflow-hidden"
+                    className="h-row overflow-hidden"
+                    style={{
+                      background: "var(--card)",
+                      border: `1px solid ${
+                        isOpen ? col + "33" : "var(--border)"
+                      }`,
+                      borderLeft: `3px solid ${
+                        isOpen ? col : "var(--border2)"
+                      }`,
+                      transition: "border-color 0.2s",
+                      animationDelay: `${idx * 0.05}s`,
+                    }}
                   >
-                    {/* Session Header */}
-                    <button
-                      onClick={() => setExpandedSession(isExpanded ? null : session.session_id)}
-                      className="w-full p-5 flex items-center justify-between hover:bg-stone-50 dark:hover:bg-white/5 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                      <Image
-                                    src="/duck.png"
-                                    alt="Duck"
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full"
-                                  />
-                        <div className="text-left">
-                          <h3 className="font-semibold text-stone-900 dark:text-white">
-                            {session.topic}
-                          </h3>
-                          <p className="text-xs text-stone-500 dark:text-neutral-400">
-                            {formatDate(session.started_at)}
-                          </p>
+                    {/* Session row */}
+                    <div style={{ display: "flex", alignItems: "stretch" }}>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            next.has(session.session_id)
+                              ? next.delete(session.session_id)
+                              : next.add(session.session_id);
+                            return next;
+                          });
+                        }}
+                        style={{
+                          width: 44,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          flexShrink: 0,
+                          borderRight: "1px solid var(--border)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 16,
+                            height: 16,
+                            border: `1px solid ${
+                              selected.has(session.session_id)
+                                ? "#ff6b6b"
+                                : "var(--border2)"
+                            }`,
+                            background: selected.has(session.session_id)
+                              ? "rgba(255,107,107,0.15)"
+                              : "transparent",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 10,
+                            color: "#ff6b6b",
+                            transition: "all 0.15s",
+                          }}
+                        >
+                          {selected.has(session.session_id) ? "✕" : ""}
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-xs text-stone-400 dark:text-neutral-500 uppercase tracking-wider">Score</p>
-                          <p className={`text-2xl font-bold ${scoreColor(session.score)}`}>
-                            {session.score}
-                          </p>
-                        </div>
-                        <div className="text-stone-400 dark:text-neutral-500">
-                          {isExpanded ? '▼' : '▶'}
-                        </div>
-                      </div>
-                    </button>
+                      <button
+                        className="h-session-btn"
+                        onClick={() =>
+                          setExpanded(isOpen ? null : session.session_id)
+                        }
+                      >
+                        {/* Left: duck + topic */}
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div
+                            style={{
+                              width: 36,
+                              height: 36,
+                              flexShrink: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: "rgba(249,115,22,0.06)",
+                              border: "1px solid rgba(249,115,22,0.2)",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <Image
+                              src="/duck.png"
+                              alt="Duck"
+                              width={28}
+                              height={28}
+                              style={{ objectFit: "contain" }}
+                            />
+                          </div>
 
-                    {/* Expanded Messages */}
-                    {isExpanded && (
-                      <div className="border-t border-stone-200 dark:border-white/10 p-5">
-                        <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
-                          {session.Messages.map((msg) => (
+                          <div className="min-w-0">
+                            <div
+                              style={{
+                                fontFamily: "var(--font-display)",
+                                fontSize: 16,
+                                letterSpacing: "0.05em",
+                                color: "var(--white)",
+                                textTransform: "uppercase",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {session.topic}
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 10,
+                                color: "var(--muted)",
+                                letterSpacing: "0.1em",
+                                marginTop: 2,
+                              }}
+                            >
+                              {formatDate(session.started_at)}
+                              {" · "}
+                              {session.Messages.length} msg
+                              {session.Messages.length !== 1 ? "s" : ""}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: score + chevron */}
+                        <div className="flex items-center gap-5 flex-shrink-0 ml-4">
+                          <div style={{ textAlign: "right" }}>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 9,
+                                color: "var(--lo)",
+                                letterSpacing: "0.2em",
+                                textTransform: "uppercase",
+                                marginBottom: 2,
+                              }}
+                            >
+                              Score
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-display)",
+                                fontSize: 28,
+                                color: col,
+                                letterSpacing: "0.02em",
+                                lineHeight: 1,
+                              }}
+                            >
+                              {sc}
+                            </div>
+                            {/* Score bar */}
+                            <div
+                              className="h-score-bar-track"
+                              style={{ width: 64 }}
+                            >
+                              <div
+                                style={{
+                                  height: "100%",
+                                  width: `${sc}%`,
+                                  background: col,
+                                  transition:
+                                    "width 0.8s cubic-bezier(0.22,1,0.36,1)",
+                                  boxShadow: `0 0 6px ${col}`,
+                                }}
+                              />
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 8,
+                                color: col,
+                                letterSpacing: "0.1em",
+                                textTransform: "uppercase",
+                                marginTop: 3,
+                              }}
+                            >
+                              {scoreLabel(sc)}
+                            </div>
+                          </div>
+
+                          <div
+                            style={{
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              color: isOpen ? "var(--acid)" : "var(--lo)",
+                              transition: "transform 0.2s, color 0.2s",
+                              transform: isOpen
+                                ? "rotate(90deg)"
+                                : "rotate(0deg)",
+                              display: "inline-block",
+                            }}
+                          >
+                            ▶
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Expanded transcript */}
+                    {isOpen && (
+                      <div
+                        className="h-expanded"
+                        style={{
+                          borderTop: `1px solid ${col}22`,
+                          padding: "16px 20px",
+                          maxHeight: 420,
+                          overflowY: "auto",
+                        }}
+                      >
+                        {/* Transcript label */}
+                        <div
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 9,
+                            color: "var(--lo)",
+                            letterSpacing: "0.25em",
+                            textTransform: "uppercase",
+                            marginBottom: 14,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          / Transcript
+                          <span
+                            style={{
+                              flex: 1,
+                              height: 1,
+                              background: "var(--border)",
+                              display: "inline-block",
+                            }}
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          {session.Messages.map((msg, mi) => (
                             <div
                               key={msg.message_id}
-                              className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                              className={`flex gap-3 ${
+                                msg.role === "user"
+                                  ? "flex-row-reverse h-msg-user"
+                                  : "h-msg-duck"
+                              }`}
+                              style={{ animationDelay: `${mi * 0.03}s` }}
                             >
-                              <div className="flex-shrink-0">
-                                {msg.role === 'assistant' ? (
+                              {/* Avatar */}
+                              <div
+                                style={{
+                                  flexShrink: 0,
+                                  width: 26,
+                                  height: 26,
+                                  marginTop: 2,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  border: `1px solid ${
+                                    msg.role !== "user"
+                                      ? "rgba(249,115,22,0.25)"
+                                      : "var(--border2)"
+                                  }`,
+                                  background:
+                                    msg.role !== "user"
+                                      ? "rgba(249,115,22,0.06)"
+                                      : "var(--card2)",
+                                  overflow: "hidden",
+                                  fontFamily: "var(--font-mono)",
+                                  fontSize: 8,
+                                  color: "var(--muted)",
+                                  letterSpacing: "0.05em",
+                                }}
+                              >
+                                {msg.role !== "user" ? (
                                   <Image
                                     src="/duck.png"
                                     alt="Duck"
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full"
+                                    width={20}
+                                    height={20}
+                                    style={{ objectFit: "contain" }}
                                   />
                                 ) : (
-                                  <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center text-neutral-950 font-bold text-xs">
-                                    You
-                                  </div>
+                                  "ME"
                                 )}
                               </div>
-                              <div className={`max-w-[75%] flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+
+                              {/* Bubble */}
+                              <div
+                                style={{
+                                  maxWidth: "75%",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems:
+                                    msg.role === "user"
+                                      ? "flex-end"
+                                      : "flex-start",
+                                  gap: 3,
+                                }}
+                              >
                                 <div
-                                    className={`px-3 py-2 rounded-xl text-sm leading-relaxed break-words  ${
-                                    msg.role === 'assistant'
-                                        ? 'bg-stone-100 dark:bg-white/10 text-stone-800 dark:text-neutral-200'
-                                        : 'bg-amber-400 text-neutral-950 whitespace-pre-wrap'
-                                    }`}
+                                  style={
+                                    msg.role !== "user"
+                                      ? {
+                                          padding: "10px 14px",
+                                          background: "var(--card2)",
+                                          border: "1px solid var(--border)",
+                                          borderLeft:
+                                            "3px solid rgba(249,115,22,0.35)",
+                                          color: "var(--white)",
+                                          fontSize: 13,
+                                          lineHeight: 1.6,
+                                          fontFamily: "var(--font-body)",
+                                          wordBreak: "break-word",
+                                        }
+                                      : {
+                                          padding: "10px 14px",
+                                          background: "var(--acid)",
+                                          color: "var(--black)",
+                                          fontSize: 13,
+                                          lineHeight: 1.6,
+                                          fontFamily: "var(--font-body)",
+                                          fontWeight: 500,
+                                          wordBreak: "break-word",
+                                        }
+                                  }
                                 >
-                                    {msg.content}
+                                  {msg.content}
                                 </div>
                               </div>
                             </div>
