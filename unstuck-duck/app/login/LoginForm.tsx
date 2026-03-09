@@ -265,8 +265,8 @@ export default function LoginForm() {
                 {isLoading
                   ? "Loading..."
                   : isSignUp
-                    ? "Create Account"
-                    : "Sign In"}
+                  ? "Create Account"
+                  : "Sign In"}
               </button>
             </form>
           </div>
