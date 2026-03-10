@@ -24,6 +24,8 @@ const Navbar: React.FC = () => {
   const isDark = resolvedTheme === "dark";
 
   const handleSignOut = async () => {
+    const confirmed = window.confirm("Are you sure you want to sign out?");
+    if (!confirmed) return;
     try {
       await signOut();
       router.push("/login");
@@ -39,7 +41,7 @@ const Navbar: React.FC = () => {
           font-family: var(--font-body);
           font-size: 13px;
           font-weight: 400;
-          color: var(--muted);
+          color: #666660;
           text-decoration: none;
           letter-spacing: 0.03em;
           padding: 4px 0;
@@ -56,9 +58,9 @@ const Navbar: React.FC = () => {
           background: var(--acid);
           transition: width 0.2s cubic-bezier(0.22,1,0.36,1);
         }
-        .nav-link:hover { color: var(--white); }
+        .nav-link:hover { color: #f5f5f0; }
         .nav-link:hover::after { width: 100%; }
-        .nav-link.active { color: var(--white); }
+        .nav-link.active { color: #f5f5f0; }
         .nav-link.active::after { width: 100%; background: var(--acid); }
 
         .nav-signout {
@@ -66,17 +68,17 @@ const Navbar: React.FC = () => {
           font-size: 10px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: var(--lo);
+          color: #444440;
           background: none;
-          border: 1px solid var(--border);
+          border: 1px solid rgba(255,255,255,0.08);
           padding: 6px 14px;
           cursor: pointer;
           transition: all 0.15s;
           border-radius: 0;
         }
         .nav-signout:hover {
-          color: var(--white);
-          border-color: var(--border2);
+          color: #f5f5f0;
+          border-color: rgba(255,255,255,0.2);
           background: rgba(128,128,128,0.08);
         }
 
@@ -105,8 +107,8 @@ const Navbar: React.FC = () => {
           width: 44px;
           height: 24px;
           border-radius: 999px;
-          background: var(--card2);
-          border: 1px solid var(--border2);
+          background: #1a1a1a;
+          border: 1px solid rgba(255,255,255,0.15);
           transition: background 0.2s, border-color 0.2s;
           flex-shrink: 0;
         }
@@ -119,7 +121,7 @@ const Navbar: React.FC = () => {
           border-radius: 50%;
           background: var(--acid);
           transition: left 0.25s cubic-bezier(0.22,1,0.36,1);
-          box-shadow: 0 0 6px rgba(200,241,53,0.5);
+          box-shadow: 0 0 6px rgba(249,115,22,0.5);
         }
         .nav-toggle-thumb.dark  { left: 3px; }
         .nav-toggle-thumb.light { left: calc(100% - 19px); }
