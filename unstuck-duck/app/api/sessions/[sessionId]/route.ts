@@ -36,7 +36,7 @@ export async function GET(
   }
 }
 
-// Add this DELETE function
+// Delete function to remove a session from user history and database
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }

@@ -64,7 +64,7 @@ const endModule = proxyquire.noCallThru()("../app/api/sessions/end/route", {
 const { POST: startPOST } = startModule;
 const { POST: endPOST } = endModule;
 const { GET, DELETE } = proxyquire("../app/api/sessions/[sessionId]/route", {
-  "@/supabase/supabase": {  // or whatever your path is
+  "@/supabase/supabase": {
     getServiceSupabase: mockGetServiceSupabase,
   },
 });
