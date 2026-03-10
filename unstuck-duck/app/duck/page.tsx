@@ -138,8 +138,6 @@ export default function Duck() {
   const [hasNewMessageSinceEval, setHasNewMessageSinceEval] = useState(false);
   const [scoreKey, setScoreKey] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -275,25 +273,36 @@ export default function Duck() {
     setIsLoading(true);
     try {
       const {
-        data: { session: auth },
+        data: { session: authSession },
       } = await clientSupabase.auth.getSession();
+  
       const res = await fetch(`/api/sessions/end`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth?.access_token ?? ""}`,
+          Authorization: `Bearer ${authSession?.access_token ?? ""}`,
         },
         body: JSON.stringify({ sessionId }),
       });
       if (!res.ok) throw new Error(await res.text());
-      const d = await res.json();
-      setTeachingScore(d.finalTeachingScore);
+      const data = await res.json();
+      
+      setTeachingScore(data.finalTeachingScore);
       setScoreKey((k) => k + 1);
-      setFinalAssessment(d.finalAssessment);
+      setFinalAssessment(
+        data.finalTeachingScore !== null 
+          ? `Your final teaching score is ${data.finalTeachingScore}/100.` 
+          : "Session ended."
+      );
       setStatus("ended");
-      addMsg("duck", d.message);
-    } catch {
-      console.error("end failed");
+      
+      // Always add a message (use fallback if API doesn't return one)
+      const finalMessage = data.message 
+        || `Session complete! Your final score is ${data.finalTeachingScore}/100.`;
+      addMsg("duck", finalMessage);
+      
+    } catch (err) {
+      console.error("Failed to end session:", err);
     } finally {
       setIsLoading(false);
     }
