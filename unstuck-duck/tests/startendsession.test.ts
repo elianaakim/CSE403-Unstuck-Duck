@@ -604,7 +604,6 @@ describe("Session API Routes", () => {
       expect(session.endTime).to.exist;
     });
   });
-});
 describe("GET /api/sessions/[sessionId]", () => {
   it("should retrieve session details", async () => {
     const sessionId = "get-test-session";
@@ -660,4 +659,5 @@ describe("GET /api/sessions/[sessionId]", () => {
     expect(response.status).to.equal(404);
     expect(data).to.have.property("error", "Session not found");
   });
+});
 });
