@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionsStore } from "../../../lib/sessionsStore";
+import { getServiceSupabase } from "@/supabase/supabase";
 
 export async function GET(
   req: NextRequest,
@@ -30,6 +31,86 @@ export async function GET(
     console.error("Error getting session:", error);
     return NextResponse.json(
       { error: "Failed to get session" },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete function to remove a session from user history and database
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ sessionId: string }> }
+) {
+  try {
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+
+    if (!token) {
+      return NextResponse.json({ error: "No token provided" }, { status: 401 });
+    }
+
+    const supabase = getServiceSupabase();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Unauthorized", detail: authError?.message },
+        { status: 401 }
+      );
+    }
+
+    const { sessionId } = await params;
+
+    // Verify ownership
+    const { data: session, error: fetchError } = await supabase
+      .from("Sessions")
+      .select("user_id")
+      .eq("session_id", sessionId)
+      .single();
+
+    if (fetchError || !session) {
+      return NextResponse.json(
+        { error: "Session not found" },
+        { status: 404 }
+      );
+    }
+
+    if (session.user_id !== user.id) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
+    // Delete messages first
+    await supabase
+      .from("Messages")
+      .delete()
+      .eq("session_id", sessionId);
+
+    // Delete session
+    const { error: deleteError } = await supabase
+      .from("Sessions")
+      .delete()
+      .eq("session_id", sessionId);
+
+    if (deleteError) {
+      console.error("Delete error:", deleteError);
+      return NextResponse.json(
+        { error: "Failed to delete session" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, sessionId });
+  } catch (error) {
+    console.error("Delete session error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete session" },
       { status: 500 }
     );
   }

@@ -63,7 +63,11 @@ const endModule = proxyquire.noCallThru()("../app/api/sessions/end/route", {
 
 const { POST: startPOST } = startModule;
 const { POST: endPOST } = endModule;
-const { GET } = proxyquire("../app/api/sessions/[sessionId]/route", {});
+const { GET, DELETE } = proxyquire("../app/api/sessions/[sessionId]/route", {
+  "@/supabase/supabase": {
+    getServiceSupabase: mockGetServiceSupabase,
+  },
+});
 
 describe("Session API Routes", () => {
   let sessions: Map<string, any>;
@@ -600,7 +604,6 @@ describe("Session API Routes", () => {
       expect(session.endTime).to.exist;
     });
   });
-});
 describe("GET /api/sessions/[sessionId]", () => {
   it("should retrieve session details", async () => {
     const sessionId = "get-test-session";
@@ -656,4 +659,5 @@ describe("GET /api/sessions/[sessionId]", () => {
     expect(response.status).to.equal(404);
     expect(data).to.have.property("error", "Session not found");
   });
+});
 });
