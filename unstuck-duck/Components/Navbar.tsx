@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
           font-size: 10px;
           letter-spacing: 0.15em;
           text-transform: uppercase;
-          color: #444440;
+          color: #bdbdb7;
           transition: color 0.2s;
           user-select: none;
         }
@@ -218,7 +218,7 @@ const Navbar: React.FC = () => {
             className="nav-signout"
             onClick={handleSignOut}
             aria-label="Sign out"
-            style={{ color: "#666660", borderColor: "rgba(255,255,255,0.08)" }}
+            style={{ color: "#bdbdb7", borderColor: "rgba(255,255,255,0.2)" }}
           >
             Sign out ↗
           </button>
