@@ -2,7 +2,7 @@
 
 User Manual: [user-manual.md](user-manual.md)
 
-Developer Manual: [developer-manuel.md](developer-manual.md)
+Developer Manual: [developer-manual.md](developer-manual.md)
 
 # Abstract
 
