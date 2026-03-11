@@ -24,6 +24,8 @@ const Navbar: React.FC = () => {
   const isDark = resolvedTheme === "dark";
 
   const handleSignOut = async () => {
+    const confirmed = window.confirm("Are you sure you want to sign out?");
+    if (!confirmed) return;
     try {
       await signOut();
       router.push("/login");
@@ -39,7 +41,6 @@ const Navbar: React.FC = () => {
           font-family: var(--font-body);
           font-size: 13px;
           font-weight: 400;
-          color: var(--muted);
           text-decoration: none;
           letter-spacing: 0.03em;
           padding: 4px 0;
@@ -56,9 +57,7 @@ const Navbar: React.FC = () => {
           background: var(--acid);
           transition: width 0.2s cubic-bezier(0.22,1,0.36,1);
         }
-        .nav-link:hover { color: var(--white); }
         .nav-link:hover::after { width: 100%; }
-        .nav-link.active { color: var(--white); }
         .nav-link.active::after { width: 100%; background: var(--acid); }
 
         .nav-signout {
@@ -66,18 +65,23 @@ const Navbar: React.FC = () => {
           font-size: 10px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: var(--lo);
           background: none;
-          border: 1px solid var(--border);
           padding: 6px 14px;
           cursor: pointer;
           transition: all 0.15s;
           border-radius: 0;
         }
-        .nav-signout:hover {
-          color: var(--white);
-          border-color: var(--border2);
+        /* Dark mode hover */
+        .nav-signout.dark-mode:hover {
+          color: #f5f5f0;
+          border-color: rgba(255,255,255,0.2);
           background: rgba(128,128,128,0.08);
+        }
+        /* Light mode hover */
+        .nav-signout.light-mode:hover {
+          color: #1a1a1a;
+          border-color: rgba(0,0,0,0.3);
+          background: rgba(0,0,0,0.05);
         }
 
         /* Toggle pill */
@@ -95,18 +99,14 @@ const Navbar: React.FC = () => {
           font-size: 10px;
           letter-spacing: 0.15em;
           text-transform: uppercase;
-          color: #444440;
           transition: color 0.2s;
           user-select: none;
         }
-        .nav-toggle-label.active-label { color: #f5f5f0; }
         .nav-toggle-track {
           position: relative;
           width: 44px;
           height: 24px;
           border-radius: 999px;
-          background: var(--card2);
-          border: 1px solid var(--border2);
           transition: background 0.2s, border-color 0.2s;
           flex-shrink: 0;
         }
@@ -119,7 +119,7 @@ const Navbar: React.FC = () => {
           border-radius: 50%;
           background: var(--acid);
           transition: left 0.25s cubic-bezier(0.22,1,0.36,1);
-          box-shadow: 0 0 6px rgba(200,241,53,0.5);
+          box-shadow: 0 0 6px rgba(249,115,22,0.5);
         }
         .nav-toggle-thumb.dark  { left: 3px; }
         .nav-toggle-thumb.light { left: calc(100% - 19px); }
@@ -138,11 +138,15 @@ const Navbar: React.FC = () => {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 32px",
-          /* Always dark — navbar stays dark in both modes for contrast */
-          background: "rgba(8,8,8,0.92)",
+          background: isDark 
+            ? "rgba(8,8,8,0.92)" 
+            : "rgba(255,255,255,0.92)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: isDark 
+            ? "1px solid rgba(255,255,255,0.08)" 
+            : "1px solid rgba(0,0,0,0.08)",
+          transition: "background 0.3s, border-color 0.3s",
         }}
       >
         {/* Logo */}
@@ -152,9 +156,10 @@ const Navbar: React.FC = () => {
             fontFamily: "var(--font-display)",
             fontSize: 22,
             letterSpacing: "0.05em",
-            color: "#f5f5f0",
+            color: isDark ? "#f5f5f0" : "#1a1a1a",
             textDecoration: "none",
             lineHeight: 1,
+            transition: "color 0.3s",
           }}
         >
           unstuck duck
@@ -177,7 +182,11 @@ const Navbar: React.FC = () => {
               <Link
                 href={item.href}
                 className={`nav-link${isActive(item.href) ? " active" : ""}`}
-                style={{ color: isActive(item.href) ? "#f5f5f0" : "#666660" }}
+                style={{ 
+                  color: isActive(item.href) 
+                    ? (isDark ? "#f5f5f0" : "#1a1a1a")
+                    : (isDark ? "#666660" : "#737373")
+                }}
               >
                 {item.label}
               </Link>
@@ -194,17 +203,35 @@ const Navbar: React.FC = () => {
               aria-label="Toggle theme"
             >
               <span
-                className={`nav-toggle-label${isDark ? " active-label" : ""}`}
+                className="nav-toggle-label"
+                style={{ 
+                  color: isDark 
+                    ? "#f5f5f0" 
+                    : "#bdbdb7" 
+                }}
               >
                 Dark
               </span>
-              <div className="nav-toggle-track">
+              <div 
+                className="nav-toggle-track"
+                style={{
+                  background: isDark ? "#1a1a1a" : "#e5e5e5",
+                  border: isDark 
+                    ? "1px solid rgba(255,255,255,0.15)" 
+                    : "1px solid rgba(0,0,0,0.15)",
+                }}
+              >
                 <div
                   className={`nav-toggle-thumb ${isDark ? "dark" : "light"}`}
                 />
               </div>
               <span
-                className={`nav-toggle-label${!isDark ? " active-label" : ""}`}
+                className="nav-toggle-label"
+                style={{ 
+                  color: !isDark 
+                    ? "#1a1a1a" 
+                    : "#444440" 
+                }}
               >
                 Light
               </span>
@@ -213,10 +240,15 @@ const Navbar: React.FC = () => {
 
           {/* Sign out */}
           <button
-            className="nav-signout"
+            className={`nav-signout ${isDark ? "dark-mode" : "light-mode"}`}
             onClick={handleSignOut}
             aria-label="Sign out"
-            style={{ color: "#666660", borderColor: "rgba(255,255,255,0.08)" }}
+            style={{ 
+              color: isDark ? "#bdbdb7" : "#737373",
+              border: isDark 
+                ? "1px solid rgba(255,255,255,0.2)" 
+                : "1px solid rgba(0,0,0,0.15)",
+            }}
           >
             Sign out ↗
           </button>

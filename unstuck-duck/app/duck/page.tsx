@@ -171,7 +171,7 @@ export default function Duck() {
       const target = (e.target as HTMLElement).closest("a");
       if (target && !target.href.includes("/duck")) {
         const confirmed = window.confirm(
-          "You have an active session. Leave without ending it?"
+          "You have an active session. Your chat won't be saved. Leave anyway?"
         );
         if (!confirmed) e.preventDefault();
       }
@@ -179,6 +179,28 @@ export default function Duck() {
 
     document.addEventListener("click", handleClick, true);
     return () => document.removeEventListener("click", handleClick, true);
+  }, [status]);
+
+  // ── Block browser back button ──
+  useEffect(() => {
+    if (status !== "active") return;
+
+    // Push a guard entry so the back button pops here first
+    window.history.pushState({ duckGuard: true }, "");
+
+    const handlePopState = () => {
+      const confirmed = window.confirm(
+        "You have an active session. Your chat won't be saved. Leave anyway?"
+      );
+      if (confirmed) {
+        window.history.go(-1); // navigate back past our guard
+      } else {
+        window.history.pushState({ duckGuard: true }, ""); // re-arm the guard
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, [status]);
 
   function now() {
@@ -522,8 +544,8 @@ export default function Duck() {
                 {status === "idle"
                   ? ""
                   : status === "active"
-                  ? "● LIVE"
-                  : "COMPLETE"}
+                    ? "● LIVE"
+                    : "COMPLETE"}
               </div>
             </div>
 
