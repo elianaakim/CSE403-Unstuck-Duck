@@ -562,6 +562,213 @@ describe("Session API Routes", () => {
       });
     });
   });
+  describe("DELETE /api/sessions/[sessionId]", () => {
+    let sessions: Map<string, any>;
+
+    beforeEach(() => {
+      sessions = getSessionsStore();
+      sessions.clear();
+    });
+
+    afterEach(() => {
+      sessions.clear();
+    });
+
+    it("should delete a session with valid auth and ownership", async () => {
+      const sessionId = "delete-test-session";
+
+      // Mock Supabase to return matching user_id
+      const mockSupabase = {
+        auth: {
+          getUser: async (token: string) => ({
+            data: { user: { id: "user-123", email: "test@example.com" } },
+            error: null,
+          }),
+        },
+        from: (table: string) => ({
+          select: (columns: string) => ({
+            eq: (col: string, val: string) => ({
+              single: async () => ({
+                data: { user_id: "user-123" },
+                error: null,
+              }),
+            }),
+          }),
+          delete: () => ({
+            eq: (col: string, val: string) => ({
+              error: null,
+            }),
+          }),
+        }),
+      };
+
+      const { DELETE: mockDelete } = proxyquire(
+        "../app/api/sessions/[sessionId]/route",
+        {
+          "@/supabase/supabase": {
+            getServiceSupabase: () => mockSupabase,
+          },
+        }
+      );
+
+      const req = new NextRequest(
+        `http://localhost:3000/api/sessions/${sessionId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer valid-token",
+          },
+        }
+      );
+
+      const mockParams = Promise.resolve({ sessionId });
+      const response = await mockDelete(req, { params: mockParams });
+      const data = await response.json();
+
+      expect(response.status).to.equal(200);
+      expect(data).to.have.property("success", true);
+      expect(data).to.have.property("sessionId", sessionId);
+    });
+
+    it("should return 401 when no token provided", async () => {
+      const req = new NextRequest(
+        "http://localhost:3000/api/sessions/test-session",
+        { method: "DELETE" }
+      );
+
+      const mockParams = Promise.resolve({ sessionId: "test-session" });
+      const response = await DELETE(req, { params: mockParams });
+      const data = await response.json();
+
+      expect(response.status).to.equal(401);
+      expect(data).to.have.property("error", "No token provided");
+    });
+
+    it("should return 401 when token is invalid", async () => {
+      const mockSupabase = {
+        auth: {
+          getUser: async () => ({
+            data: { user: null },
+            error: { message: "Invalid token" },
+          }),
+        },
+      };
+
+      const { DELETE: mockDelete } = proxyquire(
+        "../app/api/sessions/[sessionId]/route",
+        {
+          "@/supabase/supabase": {
+            getServiceSupabase: () => mockSupabase,
+          },
+        }
+      );
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/sessions/test-session",
+        {
+          method: "DELETE",
+          headers: { Authorization: "Bearer invalid-token" },
+        }
+      );
+
+      const mockParams = Promise.resolve({ sessionId: "test-session" });
+      const response = await mockDelete(req, { params: mockParams });
+      const data = await response.json();
+
+      expect(response.status).to.equal(401);
+      expect(data).to.have.property("error", "Unauthorized");
+    });
+
+    it("should return 404 when session not found", async () => {
+      const mockSupabase = {
+        auth: {
+          getUser: async () => ({
+            data: { user: { id: "user-123" } },
+            error: null,
+          }),
+        },
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              single: async () => ({
+                data: null,
+                error: { message: "Not found" },
+              }),
+            }),
+          }),
+        }),
+      };
+
+      const { DELETE: mockDelete } = proxyquire(
+        "../app/api/sessions/[sessionId]/route",
+        {
+          "@/supabase/supabase": {
+            getServiceSupabase: () => mockSupabase,
+          },
+        }
+      );
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/sessions/non-existent",
+        {
+          method: "DELETE",
+          headers: { Authorization: "Bearer valid-token" },
+        }
+      );
+
+      const mockParams = Promise.resolve({ sessionId: "non-existent" });
+      const response = await mockDelete(req, { params: mockParams });
+      const data = await response.json();
+
+      expect(response.status).to.equal(404);
+      expect(data).to.have.property("error", "Session not found");
+    });
+
+    it("should return 403 when user does not own the session", async () => {
+      const mockSupabase = {
+        auth: {
+          getUser: async () => ({
+            data: { user: { id: "user-123" } },
+            error: null,
+          }),
+        },
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              single: async () => ({
+                data: { user_id: "different-user-456" },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+
+      const { DELETE: mockDelete } = proxyquire(
+        "../app/api/sessions/[sessionId]/route",
+        {
+          "@/supabase/supabase": {
+            getServiceSupabase: () => mockSupabase,
+          },
+        }
+      );
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/sessions/other-user-session",
+        {
+          method: "DELETE",
+          headers: { Authorization: "Bearer valid-token" },
+        }
+      );
+
+      const mockParams = Promise.resolve({ sessionId: "other-user-session" });
+      const response = await mockDelete(req, { params: mockParams });
+      const data = await response.json();
+
+      expect(response.status).to.equal(403);
+      expect(data).to.have.property("error", "Forbidden");
+    });
+  });
 
   describe("Integration: Full Session Flow", () => {
     it("should complete a full session lifecycle", async () => {
@@ -604,6 +811,7 @@ describe("Session API Routes", () => {
       expect(session.endTime).to.exist;
     });
   });
+});
 describe("GET /api/sessions/[sessionId]", () => {
   it("should retrieve session details", async () => {
     const sessionId = "get-test-session";
@@ -659,5 +867,4 @@ describe("GET /api/sessions/[sessionId]", () => {
     expect(response.status).to.equal(404);
     expect(data).to.have.property("error", "Session not found");
   });
-});
 });

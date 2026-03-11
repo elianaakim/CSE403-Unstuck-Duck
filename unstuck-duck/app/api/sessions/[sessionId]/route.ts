@@ -73,24 +73,15 @@ export async function DELETE(
       .single();
 
     if (fetchError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
     if (session.user_id !== user.id) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Delete messages first
-    await supabase
-      .from("Messages")
-      .delete()
-      .eq("session_id", sessionId);
+    await supabase.from("Messages").delete().eq("session_id", sessionId);
 
     // Delete session
     const { error: deleteError } = await supabase
