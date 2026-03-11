@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import ProtectedRoute from "@/Components/ProtectedRoute";
 
 const SLIDES = [
   {
@@ -100,7 +101,7 @@ export default function Home() {
   const offset = (ticker * 0.6) % (tickerText.length * 12);
 
   return (
-    <>
+    <ProtectedRoute>
       <style>{`
         @keyframes h-fadeUp {
           from { opacity:0; transform:translateY(28px); }
@@ -552,6 +553,6 @@ export default function Home() {
           </span>
         </div>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import ProtectedRoute from "@/Components/ProtectedRoute";
 
 const ZOOM_SIGNATURE_ENDPOINT =
   process.env.NEXT_PUBLIC_ZOOM_SIGNATURE_URL || "/api/zoom/signature";
@@ -186,7 +187,7 @@ export default function Lake() {
   const busy = status === "joining" || status === "creating";
 
   return (
-    <>
+    <ProtectedRoute>
       <style>{`
         @keyframes l-fadeUp {
           from { opacity:0; transform:translateY(16px); }
@@ -701,6 +702,6 @@ export default function Lake() {
           />
         </div>
       )}
-    </>
+    </ProtectedRoute>
   );
 }
