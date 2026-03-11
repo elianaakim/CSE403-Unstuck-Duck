@@ -22,6 +22,9 @@ const Navbar: React.FC = () => {
 
   const isActive = (path: string) => pathname === path;
   const isDark = resolvedTheme === "dark";
+  
+  // Prevent hydration mismatch - always default to dark until mounted
+  const effectiveTheme = mounted ? isDark : true;
 
   const handleSignOut = async () => {
     const confirmed = window.confirm("Are you sure you want to sign out?");
@@ -138,12 +141,12 @@ const Navbar: React.FC = () => {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 32px",
-          background: isDark 
+          background: effectiveTheme 
             ? "rgba(8,8,8,0.92)" 
             : "rgba(255,255,255,0.92)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          borderBottom: isDark 
+          borderBottom: effectiveTheme 
             ? "1px solid rgba(255,255,255,0.08)" 
             : "1px solid rgba(0,0,0,0.08)",
           transition: "background 0.3s, border-color 0.3s",
@@ -156,7 +159,7 @@ const Navbar: React.FC = () => {
             fontFamily: "var(--font-display)",
             fontSize: 22,
             letterSpacing: "0.05em",
-            color: isDark ? "#f5f5f0" : "#1a1a1a",
+            color: effectiveTheme ? "#f5f5f0" : "#1a1a1a",
             textDecoration: "none",
             lineHeight: 1,
             transition: "color 0.3s",
@@ -184,8 +187,8 @@ const Navbar: React.FC = () => {
                 className={`nav-link${isActive(item.href) ? " active" : ""}`}
                 style={{ 
                   color: isActive(item.href) 
-                    ? (isDark ? "#f5f5f0" : "#1a1a1a")
-                    : (isDark ? "#666660" : "#737373")
+                    ? (effectiveTheme ? "#f5f5f0" : "#1a1a1a")
+                    : (effectiveTheme ? "#666660" : "#737373")
                 }}
               >
                 {item.label}
@@ -240,12 +243,12 @@ const Navbar: React.FC = () => {
 
           {/* Sign out */}
           <button
-            className={`nav-signout ${isDark ? "dark-mode" : "light-mode"}`}
+            className={`nav-signout ${effectiveTheme ? "dark-mode" : "light-mode"}`}
             onClick={handleSignOut}
             aria-label="Sign out"
             style={{ 
-              color: isDark ? "#bdbdb7" : "#737373",
-              border: isDark 
+              color: effectiveTheme ? "#bdbdb7" : "#737373",
+              border: effectiveTheme 
                 ? "1px solid rgba(255,255,255,0.2)" 
                 : "1px solid rgba(0,0,0,0.15)",
             }}
