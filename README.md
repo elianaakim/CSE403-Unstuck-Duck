@@ -112,21 +112,21 @@ npm test
 # Operational Use Case: Teaching the Duck a Concept
 Our core use case is fully functional:
 
-1. Click the sign up button and input username `a@a.com` and password `12345678` into sign-up form.
+1. Click the sign up button and input username `a@a.com` and password `12345678` into the sign-up form.
   
 2. Press the "Create Account" button
      - Chrome might warn you about an insecure password; feel free to ignore
   
 3. Once on the home page, make sure the carousel is selected on "Duck" and press "Enter Duck"
 
-4. Enter a topic of choice (ex. Bubbles)
+4. Enter a topic of choice (ex. Binary Search Trees)
 
 5. Explain the concept of choice to the duck through the frontend interface (ex. Bubbles can pop)
-  - Either by text(typing into the box and hitting "SEND" or the enter/return button on your keyboard) or by using the microphone(to use the microphone click the button once, talk, and click the button again and wait for the text to generate).
+  - Either by text(typing into the box and hitting "SEND" or the enter/return button on your keyboard) or by using the microphone(to use the microphone, click the button once, talk, and click the button again and wait for the text to generate).
 
 6. The backend (via Ollama) analyzes the explanation and responds with follow-up questions.
 
-7. Continue explaining the concept to the duck until satisfied with the duck's knowledge on the topic.
+7. Continue explaining the concept to the duck until the duck is satisfied with the duck's knowledge on the topic.
 
 8. Request a Teaching Score by clicking "Get Score", which evaluates how well the concept was taught based solely on the user’s explanation.
   - Note that you cannot request a score with no information, and you cannot request a new score two times in a row(in other words, you must provide addtional information before a new score is produced).
