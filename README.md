@@ -121,7 +121,7 @@ Our core use case is fully functional:
 
 4. Enter a topic of choice (ex. Binary Search Trees)
 
-5. Explain the concept of choice to the duck through the frontend interface (ex. Bubbles can pop)
+5. Explain the concept of choice to the duck through the frontend interface (ex. Binary Search Trees store elements in a sorted order)
   - Either by text(typing into the box and hitting "SEND" or the enter/return button on your keyboard) or by using the microphone(to use the microphone, click the button once, talk, and click the button again and wait for the text to generate).
 
 6. The backend (via Ollama) analyzes the explanation and responds with follow-up questions.
@@ -129,7 +129,7 @@ Our core use case is fully functional:
 7. Continue explaining the concept to the duck until the duck is satisfied with the duck's knowledge on the topic.
 
 8. Request a Teaching Score by clicking "Get Score", which evaluates how well the concept was taught based solely on the user’s explanation.
-  - Note that you cannot request a score with no information, and you cannot request a new score two times in a row(in other words, you must provide addtional information before a new score is produced).
+  - Note that you cannot request a score with no information, and you cannot request a new score two times in a row(in other words, you must provide additional information before a new score is produced).
 
 9. The backend will analyze the information provided and determine a score on how well the topic was taught
 
